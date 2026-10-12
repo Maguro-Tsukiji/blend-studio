@@ -6,9 +6,11 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { AssetStore, ROOT, MAX_BYTES, CHUNK_BYTES } from './core.mjs';
 import { configureBlender, pickBlender, readSettings } from './settings.mjs';
+import { ViewDelivery, openRevision } from './view-delivery.mjs';
 
 const store = await new AssetStore().init();
-const URI = 'ui://blend-studio/viewer-0.1.8.html';
+const delivery = new ViewDelivery();
+const URI = 'ui://blend-studio/viewer-0.1.9.html';
 const result = (data, meta = {}) => ({ content: [], structuredContent: data, _meta: meta });
 const wrap = fn => async (...args) => { try { return await fn(...args); } catch (error) { return { isError: true, content: [{ type: 'text', text: error.message }] }; } };
 const cleanup = () => { void store.close().finally(() => process.exit(0)); };
@@ -16,19 +18,30 @@ process.on('SIGINT', cleanup); process.on('SIGTERM', cleanup);
 process.stdin.on('end', () => void store.close());
 
 serveStdio(() => {
-  const server = new McpServer({ name: 'blend-studio', version: '0.1.8' });
+  const server = new McpServer({ name: 'blend-studio', version: '0.1.9' });
   const extensions = new OpenAIExtensions(server);
   server.registerResource('Blend Studio viewer', URI, { mimeType: 'text/html;profile=mcp-app' }, async () => ({ contents: [{ uri: URI, mimeType: 'text/html;profile=mcp-app', text: await readFile(join(ROOT, 'dist', 'viewer.html'), 'utf8'), _meta: { ui: { csp: { connectDomains: [], resourceDomains: [] } }, 'openai/ui': { availableDisplayModes: ['inline', 'fullscreen'], preferredDisplayMode: 'fullscreen' } } }] }));
   server.registerTool('studio.open', {
     title: 'Blend Studio', description: 'Open the interactive Blend/GLB/VRM viewer. A .blend preview requires local Blender. Never claim a conversion preserves arbitrary Blender shader nodes.',
-    inputSchema: z.object({ path: z.string().optional(), file: z.object({ name: z.string(), resourceUri: z.string() }).optional() }),
+    inputSchema: z.object({ path: z.string().optional(), file: z.object({ name: z.string(), resourceUri: z.string() }).optional(), openMode: z.enum(['ask', 'replace', 'new-tab']).optional() }),
     annotations: { readOnlyHint: true, openWorldHint: false },
     _meta: { ui: { resourceUri: URI }, 'openai/ui': { entrypoints: [{ type: 'global' }, { type: 'thread' }, { type: 'file', extensions: ['.blend', '.glb', '.vrm'] }] } },
   }, wrap(async (args, context) => {
     const path = args.path || getResourcePath(context.mcpReq._meta);
     const asset = path ? await store.openPath(path) : undefined;
-    return result({ status: await store.status(), ...(asset ? { asset } : {}) });
+    return result({ status: await store.status(), ...(asset ? { asset } : {}), openMode: args.openMode || 'ask' });
   }));
+  server.registerTool('studio.open_revision', {
+    title: '修正依頼元の画面で結果を開く',
+    description: 'Send a revised local model to the original Blend Studio viewer without opening another host window. Use viewId=viewer.id, tabId=viewer.tabId and sourceAssetId=asset.id from the chat context that initiated the edit. The user chooses replacing that source tab or opening a new internal model tab. A queued response does not mean the user has opened it yet.',
+    inputSchema: z.object({ path: z.string().max(4096), viewId: z.uuid(), tabId: z.uuid(), sourceAssetId: z.uuid() }),
+    annotations: { readOnlyHint: true, openWorldHint: false },
+  }, wrap(async args => result(await openRevision(store, delivery, args))));
+  server.registerTool('studio.view_updates', {
+    title: '元の画面への修正結果を取得',
+    inputSchema: z.object({ viewId: z.uuid(), tabs: z.array(z.object({ tabId: z.uuid(), assetId: z.uuid().optional() })).max(8), acknowledge: z.array(z.uuid()).max(8).optional() }),
+    annotations: { readOnlyHint: true, openWorldHint: false }, _meta: { ui: { visibility: ['app'] } },
+  }, wrap(async args => result(delivery.register(args))));
   server.registerTool('studio.status', { title: '描画・変換の状態', inputSchema: z.object({}), annotations: { readOnlyHint: true, openWorldHint: false } }, wrap(async () => result(await store.status())));
   server.registerTool('studio.settings', {
     title: 'Blenderを設定', description: 'Open Blend Studio settings to select or replace the local Blender executable.',

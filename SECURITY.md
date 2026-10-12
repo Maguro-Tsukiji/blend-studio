@@ -10,7 +10,8 @@ This is an experimental project. There is no guaranteed security support window 
 
 ## Runtime boundaries
 
-- The stdio MCP server runs with the current user's privileges. `studio.open` can read a local file path passed by the host. The host's tool permissions are part of the trust boundary; the server does not provide a workspace-only filesystem sandbox.
+- The stdio MCP server runs with the current user's privileges. `studio.open` and `studio.open_revision` can read a local file path passed by the host. The host's tool permissions are part of the trust boundary; the server does not provide a workspace-only filesystem sandbox.
+- Revised-file delivery uses memory-only view/tab registrations and an acknowledged queue. Source asset IDs are checked before file conversion and delivery to avoid replacing a different model. These IDs route results within the session; they are not authentication credentials or an isolation boundary against another process with the same MCP access.
 - Blend conversion starts a separate Blender process with `--factory-startup` and `--disable-autoexec`. It writes a temporary preview and does not save over the original Blend. These flags do not sandbox Blender's native parsers or external image reads. Use trusted model files and a maintained Blender installation.
 - The viewer's textures come from embedded model data. GLB validation rejects external buffer/image references; arbitrary remote URL loading is not a feature.
 - Uploaded Blend files and conversion artifacts live in an OS temporary directory. Normal shutdown removes the session directory; a crash or forced termination can leave it behind.
@@ -20,7 +21,7 @@ This is an experimental project. There is no guaranteed security support window 
 
 ## What reaches host chat
 
-The plugin shares model context: filename, asset identifier, object/material names and indices, rendering mode, selected surface coordinates, optional UV, and camera information. This may contain confidential names. Host storage and transmission depend on the host's settings and policies.
+The plugin shares model context: filename, asset identifier, object/material names and indices, rendering mode, selected surface coordinates, optional UV, camera information, and view/tab identifiers with open-tab filenames. This may contain confidential names. Host storage and transmission depend on the host's settings and policies.
 
 The plugin does not upload model binaries to an external generation service. Screenshots are saved on explicit user action and are not automatically sent. Future Blender editing and Tripo integrations are not implemented and will need their own permission/data handling design.
 

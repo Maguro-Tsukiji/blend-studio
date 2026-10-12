@@ -15,7 +15,7 @@ npm run preview
 
 Open `http://127.0.0.1:43123`. The bundled Studio Companion is a project-owned fixture with textured PBR and MToon materials. The standalone preview does not connect to host chat. UI text is currently Japanese.
 
-`npm test` covers GLB validation, chunk uploads, the stdio MCP protocol, and surface-point geometry, including skinned and morphed meshes. Blender-dependent tests skip unless explicitly enabled. Build before running protocol tests because they start the bundled server.
+`npm test` covers GLB validation, chunk uploads, the stdio MCP protocol, surface-point geometry (including skinned and morphed meshes), model-tab lifecycle/capacity and revision delivery isolation/stale targets. Blender-dependent tests skip unless explicitly enabled. Build before running protocol tests because they start the bundled server.
 
 On Windows, optional Blender tests can be enabled in PowerShell:
 
@@ -48,6 +48,8 @@ Run `npm run package` for a bundled distribution and `npm run export:source` for
 For a viewer change, check the supplied GLB, object/material selection, Original/PBR/MToon/Wire modes, both themes, narrow layouts, and any affected file handling. For point selection, check placement, camera rotation/zoom, clearing, model replacement, and the context received by the host.
 
 `tests/texture-sandbox-server.mjs` is a local AppBridge fixture with restrictive CSP. It loads the bundled Blend fixture by default and needs Blender; `TEXTURE_TEST_FILE` can select a GLB instead. Start it with `node tests/texture-sandbox-server.mjs` and inspect `http://127.0.0.1:43127`. This fixture is for development, not a public server. Its script policy deliberately restricts WebAssembly; compressed assets may need a different host policy.
+
+For revision delivery, use the fixture's button to remember a source view/tab, open another internal model tab, then send a revision back to the remembered source. Check both replace and new-tab choices, preserved camera/render mode/marker when switching tabs, cancellation, closing the last tab, and the host-received view/tab context. The fixture delivers only its configured local sample file.
 
 Host integration must also be checked in the intended desktop host. Metadata/resource verification does not prove that every host exposes the same sidebar or composer entry. Windows installation has been tested; macOS/Linux GUI installation remains unverified.
 

@@ -1,6 +1,6 @@
 {
   "name": "blend-studio",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "Local Blend/GLB/VRM viewer with PBR and MToon rendering, selection-aware ChatGPT requests, and a Blender preview converter.",
   "author": {
     "name": "Blend Studio contributors"

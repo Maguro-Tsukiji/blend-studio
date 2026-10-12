@@ -3,12 +3,14 @@ import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { AssetStore } from '../server/core.mjs';
 import { fileURLToPath } from 'node:url';
+import { ViewDelivery, openRevision } from '../server/view-delivery.mjs';
 const store = await new AssetStore().init();
+const delivery = new ViewDelivery();
 const path = process.env.TEXTURE_TEST_FILE || fileURLToPath(new URL('../assets/textured-test.blend', import.meta.url));
 const initialAsset = await store.openPath(path);
 const status = await store.status();
 const hostCode = await build({ entryPoints: [fileURLToPath(new URL('texture-sandbox-host.mjs', import.meta.url))], bundle: true, format: 'esm', write: false });
-const html = `<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#111119;color:#f3f0fa;font:12px sans-serif"><iframe style="display:block;width:100vw;height:calc(100vh - 70px);border:0"></iframe><div id="host-context" role="status" aria-label="ホストが受信した表示情報" style="padding:8px">表示情報の受信待ち</div><div id="host-target" aria-label="ホストが受信した指定位置" style="padding:0 8px;white-space:nowrap;overflow:auto"></div><script>window.initialAsset=${JSON.stringify(initialAsset).replaceAll('<','\\u003c')};window.initialStatus=${JSON.stringify(status).replaceAll('<','\\u003c')};</script><script type="module" src="/host.js"></script></body></html>`;
+const html = `<!doctype html><html><head><meta charset="utf-8"></head><body style="margin:0;background:#111119;color:#f3f0fa;font:12px sans-serif"><div style="padding:8px"><button id="remember-origin">この表示を修正依頼元として記録</button> <button id="send-revision" disabled>修正ファイルを依頼元へ送る</button><span id="delivery-status" role="status"></span></div><iframe style="display:block;width:100vw;height:800px;border:0"></iframe><div id="host-context" role="status" aria-label="ホストが受信した表示情報" style="padding:8px">表示情報の受信待ち</div><div id="host-target" aria-label="ホストが受信した指定位置" style="padding:0 8px;white-space:nowrap;overflow:auto"></div><script>window.initialAsset=${JSON.stringify(initialAsset).replaceAll('<','\\u003c')};window.initialStatus=${JSON.stringify(status).replaceAll('<','\\u003c')};</script><script type="module" src="/host.js"></script></body></html>`;
 const server = createServer(async (request, response) => {
   try {
     if (request.url === '/') { response.setHeader('Content-Type', 'text/html; charset=utf-8'); response.end(html); }
@@ -21,6 +23,8 @@ const server = createServer(async (request, response) => {
       const chunks = []; for await (const chunk of request) chunks.push(chunk);
       const { name, arguments: args = {} } = JSON.parse(Buffer.concat(chunks)); let data, meta = {};
       if (name === 'studio.status') data = await store.status();
+      else if (name === 'studio.view_updates') data = delivery.register(args);
+      else if (name === 'studio.open_revision') data = await openRevision(store, delivery, { ...args, path });
       else if (name === 'studio.upload_begin') data = store.beginUpload(args.name, args.size);
       else if (name === 'studio.upload_append') data = store.appendUpload(args.uploadId, args.offset, args.base64);
       else if (name === 'studio.upload_finish') data = { asset: await store.finishUpload(args.uploadId) };

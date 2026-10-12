@@ -6,6 +6,14 @@ Version 0.1.8 is the first public GitHub release. Earlier versions describe loca
 
 No changes yet.
 
+## 0.1.9 — 2026-10-12
+
+- Add internal model tabs with separate camera, render mode, selection, grid and surface-marker state.
+- Offer a replace/new-tab choice when opening files; preserve the current model if loading fails or is cancelled.
+- Add `studio.open_revision` to deliver a revised file to the originating view and source tab without opening another host window.
+- Include view/tab identifiers in chat context, acknowledge deliveries, and reject stale or unavailable source targets.
+- Document the revision workflow and verify tab state, delivery isolation and MCP routing.
+
 ## 0.1.8 — 2026-10-12
 
 First public release, marked as an experimental preview.
