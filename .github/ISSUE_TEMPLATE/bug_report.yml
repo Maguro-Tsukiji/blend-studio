@@ -1,0 +1,30 @@
+name: Bug report / 不具合報告
+description: Report a reproducible problem without private files or identifying paths.
+body:
+  - type: markdown
+    attributes:
+      value: Please remove private models, credentials and personal paths. For vulnerabilities, follow SECURITY.md.
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment / 環境
+      description: Blend Studio, OS, Node.js, Blender and host app versions; model format.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce / 再現手順
+      description: Prefer the bundled sample or a minimal redistributable model.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected and actual behavior / 期待した動作と実際の動作
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Sanitized errors or screenshots / 個人情報を除いたエラーや画像

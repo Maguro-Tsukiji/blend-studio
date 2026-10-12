@@ -1,0 +1,12 @@
+{
+  "name": "blend-studio-local",
+  "interface": { "displayName": "Blend Studio Local" },
+  "plugins": [
+    {
+      "name": "blend-studio",
+      "source": { "source": "local", "path": "./" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" },
+      "category": "Design"
+    }
+  ]
+}

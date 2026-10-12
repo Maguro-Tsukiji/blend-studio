@@ -1,0 +1,16 @@
+import { build } from 'esbuild';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
+const root = fileURLToPath(new URL('../', import.meta.url));
+await mkdir(join(root,'dist'),{recursive:true});
+const front = await build({ entryPoints:[join(root,'src/viewer.mjs')], bundle:true, write:false, minify:true, format:'esm', target:'es2022', outfile:'viewer.js', legalComments:'inline' });
+const js = front.outputFiles.find(f=>f.path.endsWith('.js')).text.replaceAll('</script','<\\/script');
+const css = front.outputFiles.find(f=>f.path.endsWith('.css'))?.text || '';
+let html = await readFile(join(root,'src/index.html'),'utf8');
+const icon = 'data:image/svg+xml;base64,' + Buffer.from(await readFile(join(root,'assets/logo.svg'),'utf8')).toString('base64');
+html = html.replaceAll('__BLEND_STUDIO_ICON__', icon);
+html = html.replace('</head>',()=>`<style>${css}</style></head>`).replace('<script type="module" src="./viewer.mjs"></script>',()=>`<script type="module">${js}</script>`);
+await writeFile(join(root,'dist/viewer.html'),html);
+for(const entry of ['index','preview']) await build({entryPoints:[join(root,`server/${entry}.mjs`)],bundle:true,platform:'node',format:'esm',target:'node22',outfile:join(root,`server/${entry}.bundle.mjs`),legalComments:'inline',banner:{js:"import { createRequire as __createRequire } from 'node:module'; const require = __createRequire(import.meta.url);"}});
+console.log('Standalone viewer and MCP server built.');

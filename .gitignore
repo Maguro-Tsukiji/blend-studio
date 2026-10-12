@@ -1,0 +1,16 @@
+node_modules/
+dist/
+release/
+server/*.bundle.mjs
+tests/*-result.json
+tests/*-failure.png
+*.log
+*.blend1
+*.blend2
+.env
+.env.*
+!.env.example
+settings.json
+installation.json
+.DS_Store
+Thumbs.db

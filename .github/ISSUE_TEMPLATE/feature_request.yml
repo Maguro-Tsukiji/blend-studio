@@ -1,0 +1,19 @@
+name: Feature request / 機能提案
+description: Describe the problem you want to solve.
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Use case / 使いたい場面
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior / 希望する動作
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and examples / 代替案・参考例

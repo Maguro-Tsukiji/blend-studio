@@ -1,0 +1,38 @@
+import { chromium } from 'playwright';
+import assert from 'node:assert/strict';
+import { fileURLToPath } from 'node:url';
+import { writeFile, mkdir } from 'node:fs/promises';
+const screenshotDirectory = new URL('../release/browser/', import.meta.url);
+await mkdir(screenshotDirectory, { recursive: true });
+const browser=await chromium.launch({channel:'msedge',headless:true,args:['--enable-unsafe-swiftshader']});
+const page=await browser.newPage({viewport:{width:1440,height:1040},deviceScaleFactor:1});
+const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+try{
+  await page.goto('http://127.0.0.1:43124');
+  await page.waitForFunction(()=>window.__blendStudio?.ready);
+  const initial=await page.evaluate(()=>window.__blendStudio);
+  assert.ok(initial.materials.some(m=>m.mtoon&&m.texture));assert.ok(initial.materials.some(m=>!m.mtoon));
+  assert.equal(initial.materials.length,6);
+  for(const m of initial.drawGroups) for(const g of m.groups) assert.equal(g.count,m.vertices,'full primitive must render with MToon outlines');
+  assert.equal(await page.locator('#blender-badge').textContent(),'変換可能');
+  await page.locator('#tab-materials').click();
+  await page.locator('.material-row').first().click();
+  assert.equal(await page.locator('#selection-name').textContent(),'Lavender Shell');
+  assert.equal(await page.locator('#ask,#instruction,#export-request,#request-dialog').count(),0);
+  await page.screenshot({path:fileURLToPath(new URL('preview.png',screenshotDirectory))});
+  for(const mode of ['mtoon','pbr','wire','auto']) await page.locator(`[data-mode=${mode}]`).click();
+  await page.locator('#file').setInputFiles(fileURLToPath(new URL('../assets/studio-companion.glb',import.meta.url)));
+  await page.waitForFunction(()=>document.getElementById('filename').textContent==='studio-companion.glb'&&document.getElementById('loading').hidden);
+  assert.ok((await page.evaluate(()=>window.__blendStudio.materials)).some(m=>m.mtoon&&m.texture));
+  await page.locator('#file').setInputFiles(fileURLToPath(new URL('../assets/textured-test.blend',import.meta.url)));
+  await page.waitForFunction(()=>document.getElementById('filename').textContent==='textured-test.blend'&&document.getElementById('loading').hidden,{timeout:60000});
+  assert.ok((await page.evaluate(()=>window.__blendStudio.materials)).some(m=>m.name==='Packed Checker'&&m.texture));
+  await page.screenshot({path:fileURLToPath(new URL('blend-test.png',screenshotDirectory))});
+  await page.locator('#theme').click();
+  assert.equal(await page.locator('html').getAttribute('data-theme'),'light');
+  await page.setViewportSize({width:650,height:1100});
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>window.innerWidth),false);
+  assert.deepEqual(errors,[]);
+  await writeFile(fileURLToPath(new URL('browser-result.json',import.meta.url)),JSON.stringify({passed:true,initial,errors},null,2));
+  console.log('Browser checks passed: textured MToon + PBR rendering, selection, GLB upload, Blender conversion, themes and responsive layout.');
+}catch(e){console.error('Browser errors:',errors);await page.screenshot({path:fileURLToPath(new URL('browser-failure.png',import.meta.url))});throw e;}finally{await browser.close();}

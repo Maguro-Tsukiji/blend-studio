@@ -1,0 +1,40 @@
+{
+  "name": "blend-studio",
+  "version": "0.1.8",
+  "description": "Local Blend/GLB/VRM viewer with PBR and MToon rendering, selection-aware ChatGPT requests, and a Blender preview converter.",
+  "author": {
+    "name": "Blend Studio contributors"
+  },
+  "license": "MIT",
+  "keywords": [
+    "blender",
+    "blend",
+    "glb",
+    "vrm",
+    "mtoon",
+    "3d",
+    "mcp-extensions"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./mcp.json",
+  "interface": {
+    "displayName": "Blend Studio",
+    "shortDescription": "Blend・GLBを表示して修正を相談",
+    "longDescription": "Blend・GLB・VRMの3Dプレビュー。PBR、MToon、ワイヤーフレーム、部位選択、モデル表面の位置指定に対応し、印を付けた場所と表示情報をMCP Extensionsのチャットへ渡すデスクトップ用ローカルプラグインです。Blend変換にはBlenderが必要です。Blenderの自動編集とTripoの生成連携は今後の拡張です。",
+    "developerName": "Blend Studio contributors",
+    "category": "Design",
+    "capabilities": [
+      "Interactive",
+      "Read"
+    ],
+    "logo": "./assets/logo.svg",
+    "composerIcon": "./assets/logo.svg",
+    "brandColor": "#8D6EE8",
+    "brandColorDark": "#B4A0FF",
+    "defaultPrompt": [
+      "Blend Studioで3Dファイルを開いて",
+      "表示したモデルのマテリアルを確認して",
+      "選択した部位の修正方法を提案して"
+    ]
+  }
+}

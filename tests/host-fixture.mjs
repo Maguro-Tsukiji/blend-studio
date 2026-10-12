@@ -1,0 +1,11 @@
+import { AppBridge, PostMessageTransport } from '@modelcontextprotocol/ext-apps/app-bridge';
+const iframe=document.querySelector('iframe');
+window.messages=[];window.contextUpdates=[];window.rawMessages=[];
+window.addEventListener('message',e=>{if(e.data?.method==='ui/message')window.rawMessages.push(e.data.params);});
+const bridge=new AppBridge(null,{name:'Blend Studio test host',version:'1.0.0'},{serverTools:{},message:{text:{},image:{}},updateModelContext:{text:{},structuredContent:{}},experimental:{'openai/message':{},'openai/modelContext':{}}});
+bridge.oncalltool=async(params)=>{const r=await fetch('/api/tool',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(params)});return r.json();};
+bridge.onmessage=async(params)=>{window.messages.push(params);return {};};
+bridge.onupdatemodelcontext=async(params)=>{window.contextUpdates.push(params);return {_meta:{'openai/modelContext':{updateId:'context-1'}}};};
+bridge.oninitialized=async()=>{window.hostReady=true;bridge.setHostContext({theme:'dark',displayMode:'fullscreen'});await bridge.sendToolInput({arguments:{file:{name:'studio-companion.glb',resourceUri:'host-resource://demo'}}});await bridge.sendToolResult({content:[],structuredContent:{asset:window.initialAsset,status:{blenderAvailable:true}}});};
+await bridge.connect(new PostMessageTransport(iframe.contentWindow,iframe.contentWindow));
+iframe.src='/viewer';
