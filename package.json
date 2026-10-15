@@ -1,6 +1,6 @@
 {
   "name": "blend-studio",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Local Blend/GLB/VRM viewer with PBR/MToon rendering and surface-point context for MCP Apps chat.",
   "license": "MIT",
   "repository": { "type": "git", "url": "https://github.com/Maguro-Tsukiji/blend-studio.git" },

@@ -51,6 +51,8 @@ For a viewer change, check the supplied GLB, object/material selection, Original
 
 For revision delivery, use the fixture's button to remember a source view/tab, open another internal model tab, then send a revision back to the remembered source. Check both replace and new-tab choices, preserved camera/render mode/marker when switching tabs, cancellation, closing the last tab, and the host-received view/tab context. The fixture delivers only its configured local sample file.
 
+For working-file refresh, copy a project-owned Blend fixture into an ignored development folder and select it through the viewer's working-file dialog. Save a visible edit using Blender, and check that the source tab updates with the same session, camera and render mode, without changing the selected tab when viewing another model. Also check manual refresh, disconnect, and failure retaining the old preview. Use a separate `BLEND_STUDIO_CONFIG_DIR` for test hosts to isolate routing records and working paths. Unit/protocol tests include two independent MCP processes sharing one test configuration directory; this covers a failure that a single AppBridge process cannot reveal.
+
 Host integration must also be checked in the intended desktop host. Metadata/resource verification does not prove that every host exposes the same sidebar or composer entry. Windows installation has been tested; macOS/Linux GUI installation remains unverified.
 
 ## Reporting and pull requests

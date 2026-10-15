@@ -6,6 +6,14 @@ Version 0.1.8 is the first public GitHub release. Earlier versions describe loca
 
 No changes yet.
 
+## 0.1.10 — 2026-10-15
+
+- Follow a saved Blender/GLB/VRM working file in its original tab, with automatic save detection, manual refresh and disconnect controls.
+- Preserve camera, render mode and preview placement on working-file refresh; clear outdated selections/markers and retain the old preview if loading fails.
+- Add stable editing-session IDs and session discovery so repeated revisions and missing chat context do not force another viewer to open.
+- Share small routing records across local MCP processes and load revisions on the receiving app connection; retain inactive metadata for up to 24 hours until cleanup.
+- Verify separate-process routing, stale-session rejection, overlapping saves and working-file updates. Remove temporary conversion outputs after reading them.
+
 ## 0.1.9 — 2026-10-12
 
 - Add internal model tabs with separate camera, render mode, selection, grid and surface-marker state.

@@ -5,12 +5,12 @@ import { z } from 'zod';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { AssetStore, ROOT, MAX_BYTES, CHUNK_BYTES } from './core.mjs';
-import { configureBlender, pickBlender, readSettings } from './settings.mjs';
+import { configureBlender, pickBlender, readSettings, pickWorkingFile } from './settings.mjs';
 import { ViewDelivery, openRevision } from './view-delivery.mjs';
 
 const store = await new AssetStore().init();
 const delivery = new ViewDelivery();
-const URI = 'ui://blend-studio/viewer-0.1.9.html';
+const URI = 'ui://blend-studio/viewer-0.1.10.html';
 const result = (data, meta = {}) => ({ content: [], structuredContent: data, _meta: meta });
 const wrap = fn => async (...args) => { try { return await fn(...args); } catch (error) { return { isError: true, content: [{ type: 'text', text: error.message }] }; } };
 const cleanup = () => { void store.close().finally(() => process.exit(0)); };
@@ -18,7 +18,7 @@ process.on('SIGINT', cleanup); process.on('SIGTERM', cleanup);
 process.stdin.on('end', () => void store.close());
 
 serveStdio(() => {
-  const server = new McpServer({ name: 'blend-studio', version: '0.1.9' });
+  const server = new McpServer({ name: 'blend-studio', version: '0.1.10' });
   const extensions = new OpenAIExtensions(server);
   server.registerResource('Blend Studio viewer', URI, { mimeType: 'text/html;profile=mcp-app' }, async () => ({ contents: [{ uri: URI, mimeType: 'text/html;profile=mcp-app', text: await readFile(join(ROOT, 'dist', 'viewer.html'), 'utf8'), _meta: { ui: { csp: { connectDomains: [], resourceDomains: [] } }, 'openai/ui': { availableDisplayModes: ['inline', 'fullscreen'], preferredDisplayMode: 'fullscreen' } } }] }));
   server.registerTool('studio.open', {
@@ -33,15 +33,28 @@ serveStdio(() => {
   }));
   server.registerTool('studio.open_revision', {
     title: '修正依頼元の画面で結果を開く',
-    description: 'Send a revised local model to the original Blend Studio viewer without opening another host window. Use viewId=viewer.id, tabId=viewer.tabId and sourceAssetId=asset.id from the chat context that initiated the edit. The user chooses replacing that source tab or opening a new internal model tab. A queued response does not mean the user has opened it yet.',
-    inputSchema: z.object({ path: z.string().max(4096), viewId: z.uuid(), tabId: z.uuid(), sourceAssetId: z.uuid() }),
+    description: 'Return a saved model to its existing edit session. Prefer sessionId from viewer.sessionId or studio.sessions; session IDs survive successive revisions. If origin IDs are missing, call studio.sessions instead of opening another viewer. openMode replace updates the source tab, ask offers a choice. queued does not mean displayed.',
+    inputSchema: z.object({ path: z.string().max(4096), sessionId: z.uuid().optional(), viewId: z.uuid().optional(), tabId: z.uuid().optional(), sourceAssetId: z.uuid().optional(), expectedRevision: z.number().int().min(0).optional(), openMode: z.enum(['ask', 'replace', 'new-tab']).optional() }),
     annotations: { readOnlyHint: true, openWorldHint: false },
   }, wrap(async args => result(await openRevision(store, delivery, args))));
+  server.registerTool('studio.sessions', {
+    title: '開いている編集セッションを確認', description: 'Recover existing Blend Studio source tabs and their stable session IDs, current revision, filenames and connected working files. Use before returning results when chat context is missing or stale. Never guess between multiple candidates or open a new viewer as a fallback.',
+    inputSchema: z.object({ sessionId: z.uuid().optional(), sourceAssetId: z.uuid().optional() }), annotations: { readOnlyHint: true, openWorldHint: false },
+  }, wrap(async args => result(await delivery.sessions(args))));
+  const followSchema = z.object({ sessionId: z.uuid(), path: z.string().max(4096).optional(), autoRefresh: z.boolean().optional(), disconnect: z.boolean().optional() });
+  server.registerTool('studio.follow_working_file', {
+    title: '保存した作業ファイルを元タブへ反映', description: 'Connect an explicitly identified saved local Blend/GLB/VRM working file to an existing edit session. Auto refresh updates that same tab after disk saves while preserving its camera/render mode. Does not edit files or read unsaved Blender memory. Find the session with studio.sessions. disconnect stops following.',
+    inputSchema: followSchema, annotations: { destructiveHint: false, openWorldHint: false },
+  }, wrap(async args => result(await delivery.follow(args))));
+  server.registerTool('studio.work_file_configure', { inputSchema: followSchema, _meta: { ui: { visibility: ['app'] } } }, wrap(async args => result(await delivery.follow(args))));
+  server.registerTool('studio.work_file_load', { inputSchema: z.object({ sessionId: z.uuid(), stamp: z.string().max(256).optional() }), annotations: { readOnlyHint: true, openWorldHint: false }, _meta: { ui: { visibility: ['app'] } } }, wrap(async args => result(await delivery.loadWorking(store, args))));
+  server.registerTool('studio.pick_work_file', { inputSchema: z.object({}), _meta: { ui: { visibility: ['app'] } } }, wrap(async () => result(await pickWorkingFile())));
+  server.registerTool('studio.load_revision', { inputSchema: z.object({ viewId: z.uuid(), requestId: z.uuid() }), annotations: { readOnlyHint: true, openWorldHint: false }, _meta: { ui: { visibility: ['app'] } } }, wrap(async args => result(await delivery.loadRevision(store, args))));
   server.registerTool('studio.view_updates', {
     title: '元の画面への修正結果を取得',
-    inputSchema: z.object({ viewId: z.uuid(), tabs: z.array(z.object({ tabId: z.uuid(), assetId: z.uuid().optional() })).max(8), acknowledge: z.array(z.uuid()).max(8).optional() }),
+    inputSchema: z.object({ viewId: z.uuid(), activeTabId: z.uuid().nullable().optional(), tabs: z.array(z.object({ tabId: z.uuid(), sessionId: z.uuid().optional(), revision: z.number().int().min(0).optional(), assetId: z.uuid().optional(), name: z.string().max(1024).optional(), sourcePath: z.string().max(4096).optional(), demo: z.boolean().optional() })).max(8), acknowledge: z.array(z.uuid()).max(8).optional(), outcomes: z.array(z.object({ requestId: z.uuid(), status: z.enum(['applied', 'cancelled', 'failed']) })).max(8).optional() }),
     annotations: { readOnlyHint: true, openWorldHint: false }, _meta: { ui: { visibility: ['app'] } },
-  }, wrap(async args => result(delivery.register(args))));
+  }, wrap(async args => result(await delivery.register(args))));
   server.registerTool('studio.status', { title: '描画・変換の状態', inputSchema: z.object({}), annotations: { readOnlyHint: true, openWorldHint: false } }, wrap(async () => result(await store.status())));
   server.registerTool('studio.settings', {
     title: 'Blenderを設定', description: 'Open Blend Studio settings to select or replace the local Blender executable.',

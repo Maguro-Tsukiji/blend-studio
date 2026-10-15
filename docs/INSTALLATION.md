@@ -6,7 +6,7 @@
 
 ## ビルド済みZIPを使う
 
-1. [Releases](https://github.com/Maguro-Tsukiji/blend-studio/releases)からビルド済み配布ZIPを取得します。現在の版は[Blend-Studio-0.1.9.zip](https://github.com/Maguro-Tsukiji/blend-studio/releases/download/v0.1.9/Blend-Studio-0.1.9.zip)です。GitHubが自動生成する「Source code」ZIPとは別です。
+1. [Releases](https://github.com/Maguro-Tsukiji/blend-studio/releases)からビルド済み配布ZIPを取得します。現在の版は[Blend-Studio-0.1.10.zip](https://github.com/Maguro-Tsukiji/blend-studio/releases/download/v0.1.10/Blend-Studio-0.1.10.zip)です。GitHubが自動生成する「Source code」ZIPとは別です。
 2. ZIP全体を「すべて展開」し、`blend-studio`フォルダーを開きます。
 3. `Install-Blend-Studio.cmd`をダブルクリックします。黒い画面に進捗・結果が表示されます。
 4. 「完了：Blend Studio」が表示されたら、デスクトップアプリを再起動します。

@@ -10,7 +10,7 @@
 
 Blend Studio is a local MCP Apps / OpenAI MCP Extensions plugin for `.blend`, `.glb`, and `.vrm` files. It combines PBR and MToon rendering with object/material selection and a surface marker that provides spatial context to the host's chat.
 
-**Version 0.1.9 is experimental. Viewing and edit-location context are implemented. Live Blender editing and Tripo generation are planned integrations.**
+**Version 0.1.10 is experimental. Viewing and edit-location context are implemented. Live Blender editing and Tripo generation are planned integrations.**
 
 ![Surface marker on the bundled Studio Companion demo](docs/images/surface-point.png)
 
@@ -38,7 +38,7 @@ This distribution runs a local process. Publishing a GitHub repository does not 
 
 ## Install on Windows
 
-1. Download the **[v0.1.9 built ZIP](https://github.com/Maguro-Tsukiji/blend-studio/releases/download/v0.1.9/Blend-Studio-0.1.9.zip)**. Check [Releases](https://github.com/Maguro-Tsukiji/blend-studio/releases) for newer versions.
+1. Download the **[v0.1.10 built ZIP](https://github.com/Maguro-Tsukiji/blend-studio/releases/download/v0.1.10/Blend-Studio-0.1.10.zip)**. Check [Releases](https://github.com/Maguro-Tsukiji/blend-studio/releases) for newer versions.
 2. Extract the entire ZIP.
 3. Double-click `blend-studio/Install-Blend-Studio.cmd`.
 4. Wait for the completion message, then restart the supported desktop host.
@@ -54,9 +54,15 @@ One location can be marked per tab. Camera changes and render-mode switches keep
 
 ## Open a revised file in the originating view
 
-After a separate editing tool creates a revised local file, ask the host chat to open it in the Blend Studio view where you requested the edit. Using that request's saved view/tab context, the agent calls `studio.open_revision`. The original view offers **修正依頼元のタブを更新** (replace the source tab) and **新しいタブで開く** (open a new internal tab), even when you are viewing a different tab.
+After a separate editing tool creates a revised local file, ask the host chat to open it in the Blend Studio view where you requested the edit. The agent uses the stable `viewer.sessionId` with `studio.open_revision`, and can recover missing context using `studio.sessions`. Repeated revisions keep the session identity even as asset IDs change. Direct replacement and a replace/new-tab choice are supported. Ambiguous origins require clarification instead of opening another view.
 
 A new tab preserves the original model's camera, render mode, selection and marker. Ordinary file imports also offer replace/new-tab choices; the tab bar's **＋** always adds a tab and **×** closes one. Tabs exist only in memory and are lost when the view closes. This flow updates the preview without overwriting the source file, and requires the originating view and source context to remain available. Actual Blender editing and Tripo generation are still separate planned integrations. See [ADAPTERS.md](docs/ADAPTERS.md) for the tool protocol.
+
+## Follow Blender saves in the original tab
+
+In the source tab, choose **編集中のファイル → 作業ファイルを接続**, select the working `.blend` using **参照…** or enter its absolute path, enable **保存後に自動更新する**, and click **このタブに接続**. Saves in Blender update that same tab. Camera, render mode and preview placement are preserved; selection and marker ① are cleared after geometry reload. An inactive source tab updates without switching away from the tab you are viewing.
+
+Use **今すぐ更新** to reload manually and **接続を解除** to disconnect. Failed or overlapping saves retain the old preview. This follows disk saves, not unsaved Blender memory, and never saves or edits your file. Keep the viewer open. Small session/working-path records are shared locally across MCP processes; inactive records are cleaned up on later use after 24 hours. Model tabs themselves are not restored after closing the view.
 
 ## Build and preview
 

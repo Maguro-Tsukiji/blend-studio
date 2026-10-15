@@ -14,11 +14,14 @@ export class ModelTabs {
     const total = this.items.reduce((sum, tab) => sum + (tab.state.bytes || 0), 0) - (target?.state.bytes || 0) + bytes;
     if (total > MAX_MODEL_BYTES) throw new Error('開いているモデルの合計が512MiBを超えます。不要なタブを閉じてください。');
   }
-  commit(state, { mode = 'new-tab', targetId = this.activeId } = {}) {
+  commit(state, { mode = 'new-tab', targetId = this.activeId, keepSession = false, expectedSessionId, expectedRevision } = {}) {
     this.check(state.bytes, mode, targetId);
     const existing = mode === 'replace' ? this.get(targetId) : null;
     const previous = existing?.state;
+    if (expectedSessionId && (existing?.sessionId !== expectedSessionId || expectedRevision !== undefined && existing.revision !== expectedRevision)) throw new Error('元タブの編集セッションが変わりました。現在の表示を確認してください。');
     const tab = existing || { id: this.createId() };
+    if (!existing || !keepSession) { tab.sessionId = this.createId(); tab.revision = 0; }
+    else tab.revision++;
     tab.state = state;
     if (!existing) this.items.push(tab);
     this.activeId = tab.id;

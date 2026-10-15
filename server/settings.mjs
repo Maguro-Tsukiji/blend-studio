@@ -77,3 +77,10 @@ export async function blenderStatus() {
   const settings = await readSettings(), path = await findBlender();
   return { blenderAvailable: !!path, blenderPath: path || '', configuredBlenderPath: settings.blenderPath || '', nativePickerAvailable: process.platform === 'win32' };
 }
+
+export async function pickWorkingFile() {
+  if (process.platform !== 'win32') throw new Error('作業ファイルの絶対パスを入力してください。');
+  const powershell = join(process.env.SystemRoot || 'C:/Windows', 'System32/WindowsPowerShell/v1.0/powershell.exe');
+  const script = fileURLToPath(new URL('../scripts/pick-work-file.ps1', import.meta.url));
+  return JSON.parse((await run(powershell, ['-NoProfile', '-STA', '-ExecutionPolicy', 'Bypass', '-File', script], 240000)).replace(/^\uFEFF/, ''));
+}

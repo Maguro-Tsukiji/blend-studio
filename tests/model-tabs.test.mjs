@@ -31,3 +31,14 @@ test('closing tabs selects a neighbour and allows an empty workspace', () => {
   tabs.close(second.id); assert.equal(tabs.activeId, null);
   assert.equal(tabs.items.length, 0); assert.equal(tabs.close('missing'), null);
 });
+test('working revisions retain the session and reject stale results after a manual replacement', () => {
+  const tabs = new ModelTabs(); const original = tabs.commit(state('working')).tab;
+  const sessionId = original.sessionId;
+  tabs.commit(state('saved-1'), { mode: 'replace', targetId: original.id, keepSession: true, expectedSessionId: sessionId, expectedRevision: 0 });
+  assert.equal(tabs.get().sessionId, sessionId); assert.equal(tabs.get().revision, 1);
+  assert.throws(() => tabs.commit(state('stale'), { mode: 'replace', targetId: original.id, keepSession: true, expectedSessionId: sessionId, expectedRevision: 0 }), /セッション/);
+  tabs.commit(state('different-model'), { mode: 'replace', targetId: original.id });
+  assert.notEqual(tabs.get().sessionId, sessionId);
+  assert.throws(() => tabs.commit(state('late-save'), { mode: 'replace', targetId: original.id, keepSession: true, expectedSessionId: sessionId }), /セッション/);
+  assert.equal(tabs.get().state.asset.name, 'different-model');
+});

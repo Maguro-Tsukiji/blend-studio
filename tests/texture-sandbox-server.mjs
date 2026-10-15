@@ -23,8 +23,12 @@ const server = createServer(async (request, response) => {
       const chunks = []; for await (const chunk of request) chunks.push(chunk);
       const { name, arguments: args = {} } = JSON.parse(Buffer.concat(chunks)); let data, meta = {};
       if (name === 'studio.status') data = await store.status();
-      else if (name === 'studio.view_updates') data = delivery.register(args);
+      else if (name === 'studio.view_updates') data = await delivery.register(args);
+      else if (name === 'studio.sessions') data = await new ViewDelivery().sessions(args);
       else if (name === 'studio.open_revision') data = await openRevision(store, delivery, { ...args, path });
+      else if (name === 'studio.load_revision') data = await delivery.loadRevision(store, args);
+      else if (name === 'studio.work_file_configure' || name === 'studio.follow_working_file') data = await delivery.follow(args);
+      else if (name === 'studio.work_file_load') data = await delivery.loadWorking(store, args);
       else if (name === 'studio.upload_begin') data = store.beginUpload(args.name, args.size);
       else if (name === 'studio.upload_append') data = store.appendUpload(args.uploadId, args.offset, args.base64);
       else if (name === 'studio.upload_finish') data = { asset: await store.finishUpload(args.uploadId) };
@@ -33,7 +37,7 @@ const server = createServer(async (request, response) => {
       else throw new Error('Unsupported test tool');
       response.setHeader('Content-Type','application/json'); response.end(JSON.stringify({ content: [], structuredContent: data, _meta: meta }));
     } else { response.writeHead(404); response.end(); }
-  } catch (error) { response.writeHead(500); response.end(error.message); }
+  } catch (error) { response.writeHead(200, { 'Content-Type': 'application/json' }); response.end(JSON.stringify({ isError: true, content: [{ type: 'text', text: error.message }] })); }
 });
 const port = Number(process.env.PORT || 43127);
 server.listen(port, '127.0.0.1', () => console.log(`Texture sandbox test ready: http://127.0.0.1:${port} (${initialAsset.materials.length} materials)`));

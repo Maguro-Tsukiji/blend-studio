@@ -62,7 +62,7 @@ export class AssetStore {
   assets = new Map(); uploads = new Map(); directory; residentBytes = 0;
   async init() { this.directory ||= await mkdtemp(join(tmpdir(), 'blend-studio-')); return this; }
   async close() { if (this.directory) { const target = resolve(this.directory); if (dirname(target) !== resolve(tmpdir()) || !basename(target).startsWith('blend-studio-')) throw new Error('Invalid temporary cache path'); await rm(target, { recursive: true, force: true }); } this.assets.clear(); this.uploads.clear(); }
-  async status() { return { version: '0.1.9', ...await blenderStatus(), integrations: { blender: 'file-conversion', tripo: 'planned' }, maxFileBytes: MAX_BYTES }; }
+  async status() { return { version: '0.1.10', ...await blenderStatus(), integrations: { blender: 'file-conversion', tripo: 'planned' }, maxFileBytes: MAX_BYTES }; }
   beginUpload(name, size) {
     if (!['.blend', '.glb', '.vrm'].includes(extname(name).toLowerCase())) throw new Error('対応形式は .blend / .glb / .vrm です。');
     if (!Number.isSafeInteger(size) || size <= 0 || size > MAX_BYTES) throw new Error('ファイルは256MB以下にしてください。');
@@ -95,13 +95,15 @@ export class AssetStore {
     const extension = extname(resolved).toLowerCase();
     if (!['.blend', '.glb', '.vrm'].includes(extension)) throw new Error('対応形式は .blend / .glb / .vrm です。');
     const name = displayName || basename(resolved);
-    if (extension !== '.blend') return this.addAsset(name, await readFile(resolved));
+    if (extension !== '.blend') return this.addAsset(name, await readFile(resolved), { warnings: [], sourcePath: uploaded ? undefined : resolved });
     await this.init(); const id = randomUUID();
     const out = join(this.directory, `${id}.glb`), reportPath = join(this.directory, `${id}.json`);
-    const report = await runBlender(resolved, out, reportPath);
-    if ((await stat(out)).size > MAX_BYTES) throw new Error('変換後のGLBが256MBを超えました。');
-    if (uploaded) report.warnings.push('選択した.blendに外部テクスチャがある場合、元ファイルで「リソースをパック」してから読み込んでください。');
-    return this.addAsset(name, await readFile(out), report);
+    try {
+      const report = await runBlender(resolved, out, reportPath);
+      if ((await stat(out)).size > MAX_BYTES) throw new Error('変換後のGLBが256MBを超えました。');
+      if (uploaded) report.warnings.push('選択した.blendに外部テクスチャがある場合、元ファイルで「リソースをパック」してから読み込んでください。');
+      return this.addAsset(name, await readFile(out), { ...report, sourcePath: uploaded ? undefined : resolved });
+    } finally { await Promise.all([rm(out, { force: true }), rm(reportPath, { force: true })]); }
   }
   addAsset(name, data, report = { warnings: [] }) {
     if (data.length > MAX_BYTES) throw new Error('GLBが256MBを超えました。');
@@ -109,7 +111,7 @@ export class AssetStore {
     while ((this.residentBytes + data.length > MAX_TOTAL_BYTES || this.assets.size >= 8) && this.assets.size) {
       const [id, old] = this.assets.entries().next().value; this.assets.delete(id); this.residentBytes -= old.data.length;
     }
-    const id = randomUUID(), summary = { assetId: id, name, bytes: data.length, ...summarize(json), warnings: report.warnings || [], sourceObjects: report.objects || [] };
+    const id = randomUUID(), summary = { assetId: id, name, bytes: data.length, ...summarize(json), warnings: report.warnings || [], sourceObjects: report.objects || [], ...(report.sourcePath ? { sourcePath: report.sourcePath } : {}) };
     this.assets.set(id, { data, summary }); this.residentBytes += data.length;
     return summary;
   }
