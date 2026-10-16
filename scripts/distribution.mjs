@@ -18,6 +18,7 @@ const common = [
   'schemas/plugin.schema.json', 'schemas/mcp.schema.json', 'schemas/LICENSE', 'schemas/README.md',
   'assets/logo.svg', 'assets/studio-companion.glb', 'assets/demo-base64.json',
   'assets/textured-test.blend', 'assets/README.md',
+  'assets/humanoid-test.blend', 'assets/humanoid-test.glb', 'assets/wave-test.vrma',
 ];
 
 // Only regenerate these known build directories, never an arbitrary argument.

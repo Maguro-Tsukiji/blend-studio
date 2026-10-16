@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Bone, BufferGeometry, Float32BufferAttribute, Group, Mesh, MeshBasicMaterial, Raycaster, Skeleton, SkinnedMesh, Uint16BufferAttribute, Vector3 } from 'three';
-import { createSurfaceTarget, surfacePosition, surfaceTargetData } from '../src/surface-target.mjs';
+import { createSurfaceTarget, surfacePosition, surfaceTargetData, SurfaceTargets } from '../src/surface-target.mjs';
 
 const near = (a, b) => a.forEach((value, i) => assert.ok(Math.abs(value - b[i]) < 1e-6, `${a} != ${b}`));
 function triangle(indexed = true) {
@@ -12,6 +12,19 @@ function triangle(indexed = true) {
   return geometry;
 }
 const cast = (mesh, point) => new Raycaster(point.clone().add(new Vector3(0, 0, 5)), new Vector3(0, 0, -1)).intersectObject(mesh, false)[0];
+
+test('multiple points keep independent coordinates and stable labels after deletion and obey the per-tab limit', () => {
+  const mesh = new Mesh(triangle(), new MeshBasicMaterial()); mesh.updateMatrixWorld(true);
+  const targets = new SurfaceTargets(), first = targets.add(createSurfaceTarget(cast(mesh, new Vector3(1, 1, 0)), 0)), second = targets.add(createSurfaceTarget(cast(mesh, new Vector3(2, 1, 0)), 0));
+  assert.deepEqual(targets.data().map(point => point.label), ['①', '②']);
+  near(targets.data()[0].localPosition, [1, 1, 0]); near(targets.data()[1].localPosition, [2, 1, 0]);
+  targets.remove(first.id); assert.equal(targets.items[0].id, second.id);
+  const third = targets.add(createSurfaceTarget(cast(mesh, new Vector3(1, 2, 0)), 0)); assert.equal(third.label, '③');
+  for (let i = 0; i < 6; i++) targets.add(createSurfaceTarget(cast(mesh, new Vector3(1, 1, 0)), 0));
+  assert.throws(() => targets.add({}), /8か所/); assert.equal(targets.items.length, 8);
+  targets.clear(); assert.equal(targets.data().length, 0);
+  assert.notEqual(targets.add(createSurfaceTarget(cast(mesh, new Vector3(1, 1, 0)), 0)).label, '①');
+});
 
 test('a hit remains in mesh-local coordinates despite preview centering, rotation and scale', () => {
   const mesh = new Mesh(triangle(), new MeshBasicMaterial()); mesh.name = 'Primitive';

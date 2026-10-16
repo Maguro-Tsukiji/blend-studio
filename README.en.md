@@ -10,7 +10,7 @@
 
 Blend Studio is a local MCP Apps / OpenAI MCP Extensions plugin for `.blend`, `.glb`, and `.vrm` files. It combines PBR and MToon rendering with object/material selection and a surface marker that provides spatial context to the host's chat.
 
-**Version 0.1.10 is experimental. Viewing and edit-location context are implemented. Live Blender editing and Tripo generation are planned integrations.**
+**Version 0.1.11 is experimental. Viewing and edit-location context are implemented. Live Blender editing and Tripo generation are planned integrations.**
 
 ![Surface marker on the bundled Studio Companion demo](docs/images/surface-point.png)
 
@@ -21,7 +21,9 @@ Blend Studio is a local MCP Apps / OpenAI MCP Extensions plugin for `.blend`, `.
 - View embedded-texture GLB files and VRM 0.x / 1.0 models.
 - Convert `.blend` files to a preview GLB with local Blender, without overwriting the source.
 - Switch between original materials, PBR, MToon preview, and wireframes.
-- Select objects and materials, or place marker ① on a specific surface point.
+- Select objects and materials, or place up to eight numbered surface markers with individual removal.
+- Switch between front, character-left, character-right and back orthographic views, or freely orbit in 3D. Define a custom front direction.
+- Load VRMA motion onto humanoid Blend/GLB/VRM rigs with playback, pause, stop, seek, speed, loop and manual bone mapping.
 - Share the current asset, selection, marker, materials, and camera as model context.
 - Keep separate camera, render-mode, selection and marker state in internal model tabs.
 - Deliver a revised file to the originating view and choose whether to replace its source tab or open a new tab.
@@ -38,7 +40,7 @@ This distribution runs a local process. Publishing a GitHub repository does not 
 
 ## Install on Windows
 
-1. Download the **[v0.1.10 built ZIP](https://github.com/Maguro-Tsukiji/blend-studio/releases/download/v0.1.10/Blend-Studio-0.1.10.zip)**. Check [Releases](https://github.com/Maguro-Tsukiji/blend-studio/releases) for newer versions.
+1. Download the **[v0.1.11 built ZIP](https://github.com/Maguro-Tsukiji/blend-studio/releases/download/v0.1.11/Blend-Studio-0.1.11.zip)**. Check [Releases](https://github.com/Maguro-Tsukiji/blend-studio/releases) for newer versions.
 2. Extract the entire ZIP.
 3. Double-click `blend-studio/Install-Blend-Studio.cmd`.
 4. Wait for the completion message, then restart the supported desktop host.
@@ -48,9 +50,15 @@ The installer detects Node.js and Codex; it does not download them. Configure Bl
 
 ## Mark a location
 
-Open a model, click **場所を指定**, and click the surface to place marker ①. After **チャットへ位置を共有しました** appears, describe the change in the host chat, such as “Make the hair tip at ① shorter.”
+Open a model, click **場所を追加**, and click surfaces to place markers ①, ②, ③. End placement with Escape or **指定を終了**. Once the UI confirms sharing, describe each change in the host chat, such as “Shorten the hair at ① and widen the sleeve at ②.”
 
-One location can be marked per tab. Camera changes and render-mode switches keep the marker. Selecting another object/material or replacing that tab's model clears it. Enter marks the surface at the viewport center; Escape cancels placement mode. Images are not sent automatically. A standalone preview can save a marked screenshot for manual attachment.
+Each tab supports eight locations. Remove a point with its × button or clear all with **すべて解除**. Remaining labels stay stable and deleted labels are not reused until the model is replaced. Selection, camera and render-mode changes keep the points; model replacement clears all of them. Points follow the displayed skinned/morphed surface. Enter marks the viewport center; Escape ends placement. Images are not sent automatically. A standalone preview can save a marked screenshot for manual attachment.
+
+## Views and VRMA playback
+
+The front/left/right/back buttons use orthographic projection, with zoom and pan. Left and right are the character's own sides. **3D** restores orbit controls. Orient the 3D view and click **この向きを正面にする** to define front.
+
+Open a skinned humanoid Blend/GLB/VRM model, then choose **VRMAを読み込む**. Playback controls include pause, stop, seek, speed and loop. Freeze a pose to mark several edit locations. For ordinary rigs, **ボーン対応** adjusts automatic mapping; hips, spine and head are required. A T-pose rest rig is expected. VRMA is applied to the preview while the Blend remains the working file; animations are not baked or saved into Blender. Ordinary rigs play body motion; native VRM models can also play supported expressions and gaze. Binary VRMA files must be self-contained and at most 32 MiB; the first animation is used. Motion and mapping are held per tab in memory.
 
 ## Open a revised file in the originating view
 
@@ -60,7 +68,7 @@ A new tab preserves the original model's camera, render mode, selection and mark
 
 ## Follow Blender saves in the original tab
 
-In the source tab, choose **編集中のファイル → 作業ファイルを接続**, select the working `.blend` using **参照…** or enter its absolute path, enable **保存後に自動更新する**, and click **このタブに接続**. Saves in Blender update that same tab. Camera, render mode and preview placement are preserved; selection and marker ① are cleared after geometry reload. An inactive source tab updates without switching away from the tab you are viewing.
+In the source tab, choose **編集中のファイル → 作業ファイルを接続**, select the working `.blend` using **参照…** or enter its absolute path, enable **保存後に自動更新する**, and click **このタブに接続**. Saves in Blender update that same tab. Camera, render mode and preview placement are preserved; VRMA, mapping and playback state are reapplied. If the rig changes, check **ボーン対応**. Selection and all markers are cleared after geometry reload. An inactive source tab updates without switching away from the tab you are viewing.
 
 Use **今すぐ更新** to reload manually and **接続を解除** to disconnect. Failed or overlapping saves retain the old preview. This follows disk saves, not unsaved Blender memory, and never saves or edits your file. Keep the viewer open. Small session/working-path records are shared locally across MCP processes; inactive records are cleaned up on later use after 24 hours. Model tabs themselves are not restored after closing the view.
 
@@ -83,7 +91,7 @@ Open `http://127.0.0.1:43123`. The standalone preview does not connect to a host
 
 Blender conversion preserves what its glTF exporter supports, principally PBR and embedded images. Arbitrary Blender shader graphs and Blender-specific effects are not fully preserved; Blender MToon node graphs are not automatically converted to a glTF MToon extension.
 
-Draco, KTX2, and externally referenced GLB resources are unsupported. Meshopt requires WebAssembly support from the host. Rigs are displayed, but there is no animation playback UI. Files are limited to 256 MiB. A view holds up to eight model tabs and 512 MiB of loaded GLB data; actual rendering memory can be larger. The server also caps retained assets, so older assets may need to be reloaded.
+Draco, KTX2, and externally referenced GLB resources are unsupported. Meshopt requires WebAssembly support from the host. VRMA requires a skinned humanoid rig; automatic rigging, foot IK and animation export to Blender are not implemented. Model files are limited to 256 MiB. A view holds up to eight model tabs and 512 MiB of loaded GLB data; actual rendering memory can be larger. The server also caps retained assets, so older assets may need to be reloaded.
 
 Marker coordinates and triangle indices refer to the preview, not directly to the original Blender mesh. Applying actual edits requires a separately connected editing tool and source reconciliation.
 

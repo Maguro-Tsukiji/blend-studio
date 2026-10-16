@@ -24,7 +24,7 @@ This is an experimental project. There is no guaranteed security support window 
 
 The plugin shares model context: filename, asset identifier, object/material names and indices, rendering mode, selected surface coordinates, optional UV, camera information, view/tab/session identifiers with open-tab filenames, and connected working-file paths. `studio.sessions` can also return source paths supplied when opening local files. This may contain confidential names or paths. Host storage and transmission depend on the host's settings and policies.
 
-The plugin does not upload model binaries to an external generation service. Screenshots are saved on explicit user action and are not automatically sent. Future Blender editing and Tripo integrations are not implemented and will need their own permission/data handling design.
+The plugin does not upload model binaries to an external generation service. VRMA is parsed locally in the viewer, limited to 32 MiB and self-contained binary animation data; external references and embedded meshes/images are rejected. It does not bake or save animation into a source file. Motion names, playback time/state, numbered surface points and camera projection join the host's model context. A view retains one motion per model tab in memory. Screenshots are saved on explicit user action and are not automatically sent. Future Blender editing and Tripo integrations are not implemented and will need their own permission/data handling design.
 
 ## Public contributions
 

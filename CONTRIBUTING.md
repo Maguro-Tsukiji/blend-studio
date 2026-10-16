@@ -15,7 +15,7 @@ npm run preview
 
 Open `http://127.0.0.1:43123`. The bundled Studio Companion is a project-owned fixture with textured PBR and MToon materials. The standalone preview does not connect to host chat. UI text is currently Japanese.
 
-`npm test` covers GLB validation, chunk uploads, the stdio MCP protocol, surface-point geometry (including skinned and morphed meshes), model-tab lifecycle/capacity and revision delivery isolation/stale targets. Blender-dependent tests skip unless explicitly enabled. Build before running protocol tests because they start the bundled server.
+`npm test` covers GLB validation, chunk uploads, the stdio MCP protocol, numbered surface points (including skinned and morphed geometry), camera preset directions/framing, VRMA retargeting/controls/refresh, model-tab lifecycle/capacity and revision delivery isolation/stale targets. Three Blender-dependent tests skip unless explicitly enabled. Build before running protocol tests because they start the bundled server.
 
 On Windows, optional Blender tests can be enabled in PowerShell:
 
@@ -54,6 +54,8 @@ For revision delivery, use the fixture's button to remember a source view/tab, o
 For working-file refresh, copy a project-owned Blend fixture into an ignored development folder and select it through the viewer's working-file dialog. Save a visible edit using Blender, and check that the source tab updates with the same session, camera and render mode, without changing the selected tab when viewing another model. Also check manual refresh, disconnect, and failure retaining the old preview. Use a separate `BLEND_STUDIO_CONFIG_DIR` for test hosts to isolate routing records and working paths. Unit/protocol tests include two independent MCP processes sharing one test configuration directory; this covers a failure that a single AppBridge process cannot reveal.
 
 Host integration must also be checked in the intended desktop host. Metadata/resource verification does not prove that every host exposes the same sidebar or composer entry. Windows installation has been tested; macOS/Linux GUI installation remains unverified.
+
+For motion and multi-point UI checks, use the project-owned `assets/humanoid-test.blend` (or `.glb`) with `assets/wave-test.vrma`. Check arm movement, pause/seek/rate/loop and invalid mapping recovery; all five camera views and free orbit; several labels reaching host context, individual deletion without renumbering, selection and tab changes retaining points. Save a visible edit in a copied Blend and verify motion/settings survive refresh while obsolete points clear. Do not redistribute private user models as test fixtures.
 
 ## Reporting and pull requests
 

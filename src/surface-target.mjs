@@ -26,10 +26,24 @@ export function surfaceTargetData(target) {
   if (!target) return null;
   const { mesh, material } = target;
   return {
-    kind: 'surface-point', label: '①', coordinateSpace: 'preview-mesh-local-posed',
+    kind: 'surface-point', id: target.id, label: target.label || '①', coordinateSpace: 'preview-mesh-local-posed',
     object: { index: target.meshIndex, name: mesh.userData.sourceName || mesh.name, gltfIndex: mesh.userData.gltfIndex, gltfMeshIndex: mesh.userData.gltfMeshIndex, gltfPrimitiveIndex: mesh.userData.gltfPrimitiveIndex },
     material: { name: material.name, gltfIndex: material.userData.gltfIndex },
     localPosition: surfacePosition(target, 'local').toArray(),
     triangleIndex: target.triangleIndex, vertexIndices: target.vertices, barycentric: target.barycentric, uv: target.uv,
   };
+}
+
+export const MAX_TARGETS = 8;
+export const pointLabel = number => number <= 20 ? String.fromCodePoint(0x2460 + number - 1) : `(${number})`;
+export class SurfaceTargets {
+  items = []; nextNumber = 1;
+  add(target) {
+    if (this.items.length >= MAX_TARGETS) throw new Error('場所の指定は8か所までです。不要な印を削除してください。');
+    target.id = crypto.randomUUID(); target.number = this.nextNumber++; target.label = pointLabel(target.number);
+    this.items.push(target); return target;
+  }
+  remove(id) { this.items = this.items.filter(target => target.id !== id); }
+  clear() { this.items = []; }
+  data() { return this.items.map(surfaceTargetData); }
 }

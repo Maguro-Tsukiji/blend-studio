@@ -6,6 +6,14 @@ Version 0.1.8 is the first public GitHub release. Earlier versions describe loca
 
 No changes yet.
 
+## 0.1.11 — 2026-10-16
+
+- Play self-contained VRMA motion on skinned humanoid Blend/GLB/VRM previews with play/pause, stop, seek, speed and loop controls. Add automatic and manual bone mapping for ordinary T-pose rigs.
+- Reapply motion, bone mapping and playback state after a saved working-file refresh or same-session revision. Playback is preview-only and does not bake animation into Blender.
+- Add front, character-left, character-right and back orthographic views, free 3D orbit and a configurable front direction.
+- Mark up to eight surface locations per tab, remove points individually without renumbering, and share labeled targets plus animation/camera state with host chat. Points follow skinned and morphed surfaces.
+- Add original weighted humanoid and VRMA fixtures, retargeting/camera/multi-point regression tests, and dismissible notifications so conversion notices do not cover playback controls.
+
 ## 0.1.10 — 2026-10-15
 
 - Follow a saved Blender/GLB/VRM working file in its original tab, with automatic save detection, manual refresh and disconnect controls.

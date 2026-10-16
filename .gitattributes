@@ -8,4 +8,5 @@
 *.ps1 text eol=crlf
 *.glb binary
 *.blend binary
+*.vrma binary
 *.png binary

@@ -1,14 +1,21 @@
 {
   "name": "blend-studio",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "description": "Local Blend/GLB/VRM viewer with PBR/MToon rendering and surface-point context for MCP Apps chat.",
   "license": "MIT",
-  "repository": { "type": "git", "url": "https://github.com/Maguro-Tsukiji/blend-studio.git" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Maguro-Tsukiji/blend-studio.git"
+  },
   "homepage": "https://github.com/Maguro-Tsukiji/blend-studio#readme",
-  "bugs": { "url": "https://github.com/Maguro-Tsukiji/blend-studio/issues" },
+  "bugs": {
+    "url": "https://github.com/Maguro-Tsukiji/blend-studio/issues"
+  },
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "build": "node scripts/build.mjs",
     "start": "node server/index.mjs",
@@ -19,13 +26,18 @@
     "check:public": "node scripts/check-public.mjs"
   },
   "dependencies": {
-    "@modelcontextprotocol/server": "2.3.1",
     "@modelcontextprotocol/ext-apps": "1.7.5",
     "@modelcontextprotocol/sdk": "^1.27.1",
+    "@modelcontextprotocol/server": "2.3.1",
     "@openai/mcp-extensions": "0.1.0",
     "@pixiv/three-vrm": "3.5.5",
+    "@pixiv/three-vrm-animation": "3.5.5",
     "three": "^0.180.0",
     "zod": "^4.1.12"
   },
-  "devDependencies": { "@cfworker/json-schema": "4.1.1", "esbuild": "^0.25.11", "playwright": "^1.56.0" }
+  "devDependencies": {
+    "@cfworker/json-schema": "4.1.1",
+    "esbuild": "^0.25.11",
+    "playwright": "^1.56.0"
+  }
 }
