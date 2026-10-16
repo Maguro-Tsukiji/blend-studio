@@ -34,7 +34,7 @@ export function summarize(json) {
   return {
     format: json.extensions?.VRM ? 'VRM 0.x' : json.extensions?.VRMC_vrm ? 'VRM 1.0' : 'glTF 2.0',
     nodes: (json.nodes || []).map((n, i) => ({ index: i, name: n.name || `Object ${i + 1}`, mesh: n.mesh, children: n.children || [] })),
-    materials: (json.materials || []).map((m, i) => ({ index: i, name: m.name || `Material ${i + 1}`, shader: m.extensions?.VRMC_materials_mtoon || legacy[i]?.shader === 'VRM/MToon' ? 'MToon' : m.extensions?.KHR_materials_unlit ? 'Unlit' : 'PBR', baseColor: m.pbrMetallicRoughness?.baseColorFactor || [1, 1, 1, 1], textures: !!(m.pbrMetallicRoughness?.baseColorTexture || m.normalTexture), alphaMode: m.alphaMode || 'OPAQUE', doubleSided: !!m.doubleSided })),
+    materials: (json.materials || []).map((m, i) => ({ index: i, name: m.name || `Material ${i + 1}`, shader: m.extensions?.VRMC_materials_mtoon || legacy[i]?.shader === 'VRM/MToon' ? 'MToon' : m.extensions?.KHR_materials_unlit ? 'Unlit' : 'PBR', ...(m.extras?.blendStudioSourceShader === 'MToon' ? { sourceShader: 'MToon' } : {}), baseColor: m.pbrMetallicRoughness?.baseColorFactor || [1, 1, 1, 1], textures: !!(m.pbrMetallicRoughness?.baseColorTexture || m.normalTexture), alphaMode: m.alphaMode || 'OPAQUE', doubleSided: !!m.doubleSided })),
     meshCount: json.meshes?.length || 0,
     animationCount: json.animations?.length || 0,
     extensions: json.extensionsUsed || [],
@@ -62,7 +62,7 @@ export class AssetStore {
   assets = new Map(); uploads = new Map(); directory; residentBytes = 0;
   async init() { this.directory ||= await mkdtemp(join(tmpdir(), 'blend-studio-')); return this; }
   async close() { if (this.directory) { const target = resolve(this.directory); if (dirname(target) !== resolve(tmpdir()) || !basename(target).startsWith('blend-studio-')) throw new Error('Invalid temporary cache path'); await rm(target, { recursive: true, force: true }); } this.assets.clear(); this.uploads.clear(); }
-  async status() { return { version: '0.1.13', ...await blenderStatus(), integrations: { blender: 'file-conversion', tripo: 'planned' }, maxFileBytes: MAX_BYTES }; }
+  async status() { return { version: '0.1.14', ...await blenderStatus(), integrations: { blender: 'file-conversion', tripo: 'planned' }, maxFileBytes: MAX_BYTES }; }
   beginUpload(name, size) {
     if (!['.blend', '.glb', '.vrm'].includes(extname(name).toLowerCase())) throw new Error('対応形式は .blend / .glb / .vrm です。');
     if (!Number.isSafeInteger(size) || size <= 0 || size > MAX_BYTES) throw new Error('ファイルは256MB以下にしてください。');

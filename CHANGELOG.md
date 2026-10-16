@@ -6,6 +6,13 @@ Version 0.1.8 is the first public GitHub release. Earlier versions describe loca
 
 No changes yet.
 
+## 0.1.14 — 2026-10-17
+
+- Preserve recognized Blender VRM Add-on MToon 1.0 material origin in preview GLB extras. Use that hint for Original-mode lighting instead of incorrectly selecting strong PBR defaults after conversion.
+- Label these materials as PBR approximations of MToon and expose their source shader during inspection; do not claim full shader preservation or modify saved source files.
+- Retain lighting on ordinary same-tab file replacement, including manual adjustments. Keep new-tab lighting independent.
+- Add an original Blender fixture and end-to-end conversion/GLTFLoader regression coverage, including plain PBR and disconnected MToon nodes.
+
 ## 0.1.13 — 2026-10-16
 
 - Separate PBR and MToon lighting profiles. Use restrained MToon Studio values (exposure 0.8, hemisphere 0.2, key 1.0, fill 0.2) and reduce the other toon presets to preserve pale detail.

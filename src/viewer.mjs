@@ -223,8 +223,9 @@ async function loadBytes(bytes, summary, destination = { mode: 'new-tab' }) {
     diagnostics: { materials: materials.map(m => ({ name: m.name, type: m.type, mtoon: !!m.isMToonMaterial, texture: !!m.map })), meshNames: meshes.map(m => m.userData.sourceName), drawGroups: meshes.map(m => ({vertices: m.geometry.index?.count || m.geometry.attributes.position.count, groups: m.geometry.groups})), extensions: json.extensionsUsed || [] } };
   saveView();
   const previousActiveId = modelTabs.activeId, original = modelTabs.get(destination.targetId)?.state;
+  if (destination.mode === 'replace' && original && !original.asset.demo) state.lighting = lightingSettings(original.lighting);
   if (destination.preserveView && original && !original.asset.demo) {
-    Object.assign(state, { camera: original.camera, renderMode: original.renderMode, gridVisible: original.gridVisible, viewMode: original.viewMode, frontYaw: original.frontYaw, freeCamera: original.freeCamera, lighting: lightingSettings(original.lighting) });
+    Object.assign(state, { camera: original.camera, renderMode: original.renderMode, gridVisible: original.gridVisible, viewMode: original.viewMode, frontYaw: original.frontYaw, freeCamera: original.freeCamera });
     model.position.copy(original.model.position);
     model.userData.frame.center = center.clone().add(model.position).toArray();
   }
@@ -315,7 +316,7 @@ function setMode(mode) {
     }
   }
   if (model) model.traverse(o => { if (o.material?.isOutline || (Array.isArray(o.material) && o.material.every(m => m.isOutline))) o.visible = mode === 'auto'; });
-  $('shader-badge').textContent = mode === 'auto' ? materials.some(m => m.isMToonMaterial) ? 'MToon' : 'PBR' : mode === 'mtoon' ? 'MToon Preview' : mode === 'pbr' ? 'PBR Preview' : 'Wireframe';
+  $('shader-badge').textContent = mode === 'auto' ? materials.some(m => m.isMToonMaterial) ? 'MToon' : materials.some(m => m.userData?.blendStudioSourceShader === 'MToon') ? 'PBR（MToon変換）' : 'PBR' : mode === 'mtoon' ? 'MToon Preview' : mode === 'pbr' ? 'PBR Preview' : 'Wireframe';
   lighting = lightingForMode(lighting, mode, materials); updateLighting(); renderLighting();
   void syncContext();
 }
@@ -683,7 +684,7 @@ function applyTheme(theme) { document.documentElement.dataset.theme = theme; gri
 
 await loadBytes(decode(demoBase64), { name: 'Studio Companion', format: 'glTF 2.0', demo: true });
 if (hosted) {
-  app = new App({ name: 'Blend Studio', version: '0.1.13' }, { availableDisplayModes: ['inline', 'fullscreen'] }); extensions = new OpenAIExtensions(app);
+  app = new App({ name: 'Blend Studio', version: '0.1.14' }, { availableDisplayModes: ['inline', 'fullscreen'] }); extensions = new OpenAIExtensions(app);
   let pendingInput, pendingResult;
   app.addEventListener('toolinput', ({ arguments: args }) => { pendingInput = args; });
   const consumeResult = result => { const input = pendingInput; pendingInput = undefined; return queueImport(async () => {

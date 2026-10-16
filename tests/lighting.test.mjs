@@ -67,3 +67,17 @@ test('explicit presets, custom edits and legacy retained settings survive mode c
   }
   const refreshed = lightingSettings(edited); refreshed.fill.intensity = 5; assert.notEqual(refreshed.fill.intensity, edited.fill.intensity);
 });
+
+test('converted MToon origin selects restrained lights without pretending the PBR approximation is native MToon', () => {
+  const converted = new MeshStandardMaterial(), plain = new MeshStandardMaterial();
+  converted.userData.blendStudioSourceShader = 'MToon';
+  assert.equal(converted.isMToonMaterial, undefined);
+  assert.equal(lightingProfile('auto', [converted, plain]), 'mtoon');
+  assert.equal(lightingProfile('pbr', [converted]), 'pbr');
+  assert.equal(lightingProfile('wire', [converted], 'pbr'), 'pbr');
+  const settings = lightingForMode(lightingPreset('studio', 'mtoon'), 'auto', [converted]);
+  assert.equal(settings.ambient, .2); assert.equal(settings.key.intensity, 1);
+  plain.name = 'MToon'; plain.userData.blendStudioSourceShader = true;
+  assert.equal(lightingProfile('auto', [plain]), 'pbr');
+  converted.dispose(); plain.dispose();
+});

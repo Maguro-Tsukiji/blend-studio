@@ -61,6 +61,8 @@ For lighting, check all presets, color picker/hex input, zero intensity/exposure
 
 For automatic lighting, verify a native MToon model opens with restrained values in Original mode, PBR restores its own defaults, and MToon preview selects the toon profile. Choose an explicit preset or edit a control, switch modes/tabs and refresh the source to check it is retained. Reset must choose the current renderer's defaults. Legacy snapshots without automatic metadata must not be silently overwritten.
 
+For Blend lighting, run `tests/blend-lighting.test.mjs` with `TEST_BLENDER_PATH` and `BLENDER_PATH` set to Blender. It creates an original fixture with a MToon compatibility output, ordinary PBR, and unused MToon nodes. Confirm only the active toon/compatibility graph carries the origin hint through export and GLTFLoader, and that PBR mode still selects PBR defaults. Manually replace a model using the ordinary file picker after editing lights; values must survive. A new tab must use independent automatic defaults. Do not commit private repro models or screenshots.
+
 ## Reporting and pull requests
 
 - Include the app version, OS, Node/Blender/host versions, file format, reproduction steps, and the observed error.

@@ -27,7 +27,7 @@ export function lightingPreset(name, profile = 'pbr', automatic = true) {
 }
 export function lightingProfile(mode, materials, previous) {
   if (mode === 'wire' && ['pbr', 'mtoon'].includes(previous)) return previous;
-  return mode === 'mtoon' || mode !== 'pbr' && materials.some(material => !material.isOutline && (material.isMToonMaterial || material.isMToonNodeMaterial)) ? 'mtoon' : 'pbr';
+  return mode === 'mtoon' || mode !== 'pbr' && materials.some(material => !material.isOutline && (material.isMToonMaterial || material.isMToonNodeMaterial || material.userData?.blendStudioSourceShader === 'MToon')) ? 'mtoon' : 'pbr';
 }
 export function lightingForMode(settings, mode, materials) {
   const current = lightingSettings(settings), profile = lightingProfile(mode, materials, current.profile);

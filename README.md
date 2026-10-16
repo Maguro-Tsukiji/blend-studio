@@ -12,7 +12,7 @@ Blend Studioは、`.blend`・`.glb`・`.vrm`を表示するローカルMCP Apps�
 
 モデルに①②③の印を付けて、ホストのチャットで「①の毛先を短く、②の袖を広くして」と依頼できます。ファイル名、選択した部品、マテリアル、複数の指定位置、視点、VRMAの再生状態をチャットへ共有します。
 
-**現在は0.1.13の実験段階です。表示と修正箇所の共有を実装しています。Blenderのライブ編集とTripoでの生成は未接続です。**
+**現在は0.1.14の実験段階です。表示と修正箇所の共有を実装しています。Blenderのライブ編集とTripoでの生成は未接続です。**
 
 ![同梱のサンプルモデルで位置を指定した画面](docs/images/surface-point.png)
 
@@ -49,7 +49,7 @@ WindowsのCodexデスクトップ環境で、MCPの起動・ツール・画面�
 
 ## Windowsでインストール
 
-1. **[v0.1.13のビルド済みZIP](https://github.com/Maguro-Tsukiji/blend-studio/releases/download/v0.1.13/Blend-Studio-0.1.13.zip)**を取得します。新しい版は[Releases](https://github.com/Maguro-Tsukiji/blend-studio/releases)から確認できます。
+1. **[v0.1.14のビルド済みZIP](https://github.com/Maguro-Tsukiji/blend-studio/releases/download/v0.1.14/Blend-Studio-0.1.14.zip)**を取得します。新しい版は[Releases](https://github.com/Maguro-Tsukiji/blend-studio/releases)から確認できます。
 2. ZIPを右クリックし、**「すべて展開」**します。
 3. `blend-studio`フォルダー内の**`Install-Blend-Studio.cmd`**をダブルクリックします。
 4. **「完了：Blend Studio」**が表示されたら、対応するデスクトップアプリを再起動します。
@@ -91,6 +91,8 @@ Blenderは後から**画面上部の「設定」→「参照…」**で指定で
 - **リセット**：標準のスタジオ設定へ戻します。
 
 初期ライティングは描画方式で分かれます。元のマテリアルがMToonなら、OriginalでもMToon用を自動で使います。MToon用の標準値は**露出0.8・周囲光0.2・主光源1.0・補助光0.2**で、白い髪や衣装の陰影が薄くなりすぎないようにしています。PBR用は従来の値を使用します。ほかのプリセットもMToon用に明るさを抑えています。
+
+`.blend`のVRM Add-on MToon 1.0ノードはPBRへ近似されますが、変換前のMToon情報をライト判定に引き継ぎます。Originalでは「PBR（MToon変換）」と表示し、MToon用の初期ライトを使います。「このタブを更新」で別のファイルを開いても、手動で調整したライトは保持します。新しいタブはモデルに合う初期設定で開きます。
 
 未調整の状態では描画モードに合わせて自動で切り替わります。プリセットを選んだりスライダー・色を調整した後は、その設定をモード変更でも保持します。**「リセット」**で、現在の描画方式に合う初期設定と自動切り替えへ戻ります。パネルに「自動」か「手動設定を保持中」かを表示します。
 
