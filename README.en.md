@@ -10,7 +10,7 @@
 
 Blend Studio is a local MCP Apps / OpenAI MCP Extensions plugin for `.blend`, `.glb`, and `.vrm` files. It combines PBR and MToon rendering with object/material selection and a surface marker that provides spatial context to the host's chat.
 
-**Version 0.1.11 is experimental. Viewing and edit-location context are implemented. Live Blender editing and Tripo generation are planned integrations.**
+**Version 0.1.12 is experimental. Viewing and edit-location context are implemented. Live Blender editing and Tripo generation are planned integrations.**
 
 ![Surface marker on the bundled Studio Companion demo](docs/images/surface-point.png)
 
@@ -21,6 +21,7 @@ Blend Studio is a local MCP Apps / OpenAI MCP Extensions plugin for `.blend`, `.
 - View embedded-texture GLB files and VRM 0.x / 1.0 models.
 - Convert `.blend` files to a preview GLB with local Blender, without overwriting the source.
 - Switch between original materials, PBR, MToon preview, and wireframes.
+- Adjust lighting live: four presets, exposure, PBR environment, hemisphere light, and independent key/fill intensity, color and direction.
 - Select objects and materials, or place up to eight numbered surface markers with individual removal.
 - Switch between front, character-left, character-right and back orthographic views, or freely orbit in 3D. Define a custom front direction.
 - Load VRMA motion onto humanoid Blend/GLB/VRM rigs with playback, pause, stop, seek, speed, loop and manual bone mapping.
@@ -40,7 +41,7 @@ This distribution runs a local process. Publishing a GitHub repository does not 
 
 ## Install on Windows
 
-1. Download the **[v0.1.11 built ZIP](https://github.com/Maguro-Tsukiji/blend-studio/releases/download/v0.1.11/Blend-Studio-0.1.11.zip)**. Check [Releases](https://github.com/Maguro-Tsukiji/blend-studio/releases) for newer versions.
+1. Download the **[v0.1.12 built ZIP](https://github.com/Maguro-Tsukiji/blend-studio/releases/download/v0.1.12/Blend-Studio-0.1.12.zip)**. Check [Releases](https://github.com/Maguro-Tsukiji/blend-studio/releases) for newer versions.
 2. Extract the entire ZIP.
 3. Double-click `blend-studio/Install-Blend-Studio.cmd`.
 4. Wait for the completion message, then restart the supported desktop host.
@@ -59,6 +60,12 @@ Each tab supports eight locations. Remove a point with its × button or clear al
 The front/left/right/back buttons use orthographic projection, with zoom and pan. Left and right are the character's own sides. **3D** restores orbit controls. Orient the 3D view and click **この向きを正面にする** to define front.
 
 Open a skinned humanoid Blend/GLB/VRM model, then choose **VRMAを読み込む**. Playback controls include pause, stop, seek, speed and loop. Freeze a pose to mark several edit locations. For ordinary rigs, **ボーン対応** adjusts automatic mapping; hips, spine and head are required. A T-pose rest rig is expected. VRMA is applied to the preview while the Blend remains the working file; animations are not baked or saved into Blender. Ordinary rigs play body motion; native VRM models can also play supported expressions and gaze. Binary VRMA files must be self-contained and at most 32 MiB; the first animation is used. Motion and mapping are held per tab in memory.
+
+## Adjust lighting
+
+Open **☼ ライティング** beside the view buttons, or expand **ライティング** in the inspector. Choose Studio, Soft, Front or Dramatic, then adjust exposure, PBR environment intensity and hemisphere-light brightness/color. Key and fill lights each have intensity, color, horizontal angle and elevation controls. Use the color picker or a `#RRGGBB` value; **リセット** restores Studio.
+
+Directions follow the model's configured front, independently of camera orbit. Settings are retained per tab and across saved working-file refreshes, in memory until the view closes. These are preview settings; source lights/materials are unchanged. Environment lighting affects PBR; emissive and wireframe materials may respond differently.
 
 ## Open a revised file in the originating view
 

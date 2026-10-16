@@ -12,6 +12,8 @@
 
 `camera.view`は`front | left | right | back | free`、`camera.projection`は`orthographic | perspective`です。`frontYaw`はカスタム正面の水平角です。VRMAを読み込むと`animation: { name, duration, time, playing, rate, loop }`を含め、未読込時はnullです。再生中は約1秒ごとに現在のポーズの位置情報を共有します。正確な指示には該当ポーズで一時停止してください。VRMAは表示用モデルにのみ適用し、Blenderへ書き戻しません。
 
+ライティング調整時には`lighting: { preset, exposure, environment, ambient, ambientColor, key: { intensity, color, azimuth, elevation }, fill: { intensity, color, azimuth, elevation } }`を共有します。角度は度数で、水平0°は設定した正面、90°は左側面、高さ0°は水平、90°は真上です。カメラとは独立しています。設定はタブごとに保持し、同じ編集セッションの保存・修正結果読み込みでは引き継ぎます。元ファイルのライトやマテリアルは変更しません。見た目の色を判断するときは、マテリアルと表示用ライティングを区別してください。
+
 ## 修正ファイル → 依頼元の画面（実装済み）
 
 モデル文脈には `viewer: { id, tabId, sessionId, revision, tabs: [{ id, sessionId, revision, name, assetId }] }` と、接続中の`workingFile`を含めます。`sessionId`は同じ作業ファイルの保存・再読み込みを繰り返しても保持します。通常のファイル置き換えでは新しいセッションを作り、古い編集結果と区別します。別の編集ツールで作業コピーを更新した後、次のツールを呼びます。

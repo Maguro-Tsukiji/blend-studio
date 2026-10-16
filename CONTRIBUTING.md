@@ -57,6 +57,8 @@ Host integration must also be checked in the intended desktop host. Metadata/res
 
 For motion and multi-point UI checks, use the project-owned `assets/humanoid-test.blend` (or `.glb`) with `assets/wave-test.vrma`. Check arm movement, pause/seek/rate/loop and invalid mapping recovery; all five camera views and free orbit; several labels reaching host context, individual deletion without renumbering, selection and tab changes retaining points. Save a visible edit in a copied Blend and verify motion/settings survive refresh while obsolete points clear. Do not redistribute private user models as test fixtures.
 
+For lighting, check all presets, color picker/hex input, zero intensity/exposure, key/fill directions, reset, PBR and MToon, both themes and narrow layouts. Switch tabs and refresh a saved working file to check retained settings. Confirm the fixture host receives the same lighting values. `tests/lighting.test.mjs` checks bounded settings, independent snapshots and actual Three.js light positioning/application.
+
 ## Reporting and pull requests
 
 - Include the app version, OS, Node/Blender/host versions, file format, reproduction steps, and the observed error.

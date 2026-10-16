@@ -26,6 +26,8 @@ The plugin shares model context: filename, asset identifier, object/material nam
 
 The plugin does not upload model binaries to an external generation service. VRMA is parsed locally in the viewer, limited to 32 MiB and self-contained binary animation data; external references and embedded meshes/images are rejected. It does not bake or save animation into a source file. Motion names, playback time/state, numbered surface points and camera projection join the host's model context. A view retains one motion per model tab in memory. Screenshots are saved on explicit user action and are not automatically sent. Future Blender editing and Tripo integrations are not implemented and will need their own permission/data handling design.
 
+Preview lighting settings (preset, numeric intensities/angles and colors) are included in host model context. They stay in memory per model tab and do not change the source file's lights or materials. Presets use the bundled environment; no HDR image downloads or additional services are required.
+
 ## Public contributions
 
 Do not commit real user models, installation records, settings, environment files, logs, or diagnostic screenshots. The clean source exporter uses an allowlist and excludes generated bundles and test reports. Review the actual exported contents before publishing; an automated scan is not a substitute for reviewing asset rights and confidential metadata.

@@ -10,7 +10,7 @@ import { ViewDelivery, openRevision } from './view-delivery.mjs';
 
 const store = await new AssetStore().init();
 const delivery = new ViewDelivery();
-const URI = 'ui://blend-studio/viewer-0.1.11.html';
+const URI = 'ui://blend-studio/viewer-0.1.12.html';
 const result = (data, meta = {}) => ({ content: [], structuredContent: data, _meta: meta });
 const wrap = fn => async (...args) => { try { return await fn(...args); } catch (error) { return { isError: true, content: [{ type: 'text', text: error.message }] }; } };
 const cleanup = () => { void store.close().finally(() => process.exit(0)); };
@@ -18,7 +18,7 @@ process.on('SIGINT', cleanup); process.on('SIGTERM', cleanup);
 process.stdin.on('end', () => void store.close());
 
 serveStdio(() => {
-  const server = new McpServer({ name: 'blend-studio', version: '0.1.11' });
+  const server = new McpServer({ name: 'blend-studio', version: '0.1.12' });
   const extensions = new OpenAIExtensions(server);
   server.registerResource('Blend Studio viewer', URI, { mimeType: 'text/html;profile=mcp-app' }, async () => ({ contents: [{ uri: URI, mimeType: 'text/html;profile=mcp-app', text: await readFile(join(ROOT, 'dist', 'viewer.html'), 'utf8'), _meta: { ui: { csp: { connectDomains: [], resourceDomains: [] } }, 'openai/ui': { availableDisplayModes: ['inline', 'fullscreen'], preferredDisplayMode: 'fullscreen' } } }] }));
   server.registerTool('studio.open', {

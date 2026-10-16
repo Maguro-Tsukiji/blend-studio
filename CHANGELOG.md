@@ -6,6 +6,13 @@ Version 0.1.8 is the first public GitHub release. Earlier versions describe loca
 
 No changes yet.
 
+## 0.1.12 — 2026-10-16
+
+- Add live preview lighting controls for exposure, PBR environment, hemisphere light and independent key/fill intensity, color and direction.
+- Add Studio, Soft, Front and Dramatic presets, color picker/hex input and reset. Keep lights relative to the configured model front instead of the camera.
+- Retain lighting per model tab and across same-session revisions/working-file refreshes, and share settings with host model context. Source files are unchanged.
+- Verify bounded settings, independent snapshots, actual Three.js light application and model-relative placement.
+
 ## 0.1.11 — 2026-10-16
 
 - Play self-contained VRMA motion on skinned humanoid Blend/GLB/VRM previews with play/pause, stop, seek, speed and loop controls. Add automatic and manual bone mapping for ordinary T-pose rigs.
