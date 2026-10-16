@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "blend-studio",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "description": "Local Blend/GLB/VRM viewer with PBR and MToon rendering, selection-aware ChatGPT requests, and a Blender preview converter.",
   "author": { "name": "Blend Studio contributors" },
   "license": "MIT",

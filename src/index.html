@@ -15,7 +15,7 @@
 <div class="inspector-heading"><span>SCENE INSPECTOR</span><span>◈</span></div>
 <details id="lighting-panel" class="lighting-panel"><summary>ライティング</summary><div class="lighting-body">
 <div class="lighting-preset-row"><label for="lighting-preset">プリセット</label><select id="lighting-preset"></select><button id="lighting-reset" type="button">リセット</button></div>
-<p class="lighting-help">表示用のライトを調整します。設定はモデルのタブごとに保持します。</p>
+<p id="lighting-profile-status" class="lighting-help" role="status">描画方式に合わせて初期設定を選びます。</p><p class="lighting-help">表示用のライトを調整します。手動調整はモードを切り替えても保持します。「リセット」で現在の描画方式の初期設定に戻ります。</p>
 <label class="lighting-range" for="light-exposure"><span>露出</span><output id="light-exposure-value" for="light-exposure"></output><input id="light-exposure" data-lighting="exposure" type="range" min="0" max="3" step="0.05"></label>
 <label class="lighting-range" for="light-environment"><span>環境マップ（PBR）</span><output id="light-environment-value" for="light-environment"></output><input id="light-environment" data-lighting="environment" type="range" min="0" max="3" step="0.05"></label>
 <label class="lighting-range" for="light-ambient"><span>周囲光の明るさ</span><output id="light-ambient-value" for="light-ambient"></output><input id="light-ambient" data-lighting="ambient" type="range" min="0" max="5" step="0.1"></label>

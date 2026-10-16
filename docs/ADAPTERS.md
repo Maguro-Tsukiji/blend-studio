@@ -14,6 +14,8 @@
 
 ライティング調整時には`lighting: { preset, exposure, environment, ambient, ambientColor, key: { intensity, color, azimuth, elevation }, fill: { intensity, color, azimuth, elevation } }`を共有します。角度は度数で、水平0°は設定した正面、90°は左側面、高さ0°は水平、90°は真上です。カメラとは独立しています。設定はタブごとに保持し、同じ編集セッションの保存・修正結果読み込みでは引き継ぎます。元ファイルのライトやマテリアルは変更しません。見た目の色を判断するときは、マテリアルと表示用ライティングを区別してください。
 
+`lighting`は`profile: pbr | mtoon`と`automatic: boolean`も含みます。未調整の初期値は表示モードに追従し、Originalでは元の非アウトラインMToonマテリアルを検出します。手動プリセット・数値・色を選ぶと`automatic: false`になり、モード変更で上書きしません。リセットすると現在の描画方式に合う標準値と自動切り替えへ戻ります。タブ切り替え・同じ編集セッションの更新でもこの状態を保持します。
+
 ## 修正ファイル → 依頼元の画面（実装済み）
 
 モデル文脈には `viewer: { id, tabId, sessionId, revision, tabs: [{ id, sessionId, revision, name, assetId }] }` と、接続中の`workingFile`を含めます。`sessionId`は同じ作業ファイルの保存・再読み込みを繰り返しても保持します。通常のファイル置き換えでは新しいセッションを作り、古い編集結果と区別します。別の編集ツールで作業コピーを更新した後、次のツールを呼びます。

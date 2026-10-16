@@ -14,7 +14,7 @@ import { createSurfaceTarget, surfacePosition, surfaceTargetData, SurfaceTargets
 import { ModelTabs } from './model-tabs.mjs';
 import { MotionPlayer, HUMAN_BONES, CORE_BONES, automaticMapping, validateMotion } from './motion-player.mjs';
 import { VIEW_NAMES, viewDirection, orthographicFrame } from './camera-views.mjs';
-import { LIGHTING_PRESETS, lightingSettings, lightingPreset, applyLighting } from './lighting.mjs';
+import { LIGHTING_PRESETS, lightingSettings, lightingPreset, lightingProfile, lightingForMode, applyLighting } from './lighting.mjs';
 
 const $ = id => document.getElementById(id);
 const putText = (id, text) => { if ($(id).textContent !== text) $(id).textContent = text; };
@@ -133,9 +133,8 @@ function activateTab(id, save = true) {
     scene.add(model); const { size, largest } = model.userData.frame;
     grid.scale.setScalar(largest / 3); grid.visible = state.gridVisible;
     shadow.scale.setScalar(Math.max(size[0], size[2]) * .55); shadow.visible = true;
-    setMode(state.renderMode);
     viewMode = state.viewMode || 'free'; frontYaw = state.frontYaw || 0; freeCamera = state.freeCamera;
-    lighting = lightingSettings(state.lighting); updateLighting(); renderLighting();
+    lighting = lightingSettings(state.lighting); setMode(state.renderMode);
     if (state.camera) restoreCamera(state.camera); else resetCamera();
     buildLists(); select(state.selected, true); refreshTarget();
     $('filename').textContent = asset.name; $('fileinfo').textContent = `${asset.format || 'glTF 2.0'} · ${(state.bytes / 1048576).toFixed(1)} MB${asset.name.toLowerCase().endsWith('.blend') ? ' · Blender変換' : ''}`;
@@ -220,7 +219,7 @@ async function loadBytes(bytes, summary, destination = { mode: 'new-tab' }) {
   model.position.x -= center.x; model.position.z -= center.z; model.position.y -= box.min.y;
   const largest = Math.max(size.x, size.y, size.z, .01);
   model.userData.frame = { size: size.toArray(), largest, center: [0, size.y / 2, 0] };
-  const state = { model, vrm, meshes, materials, asset: summary, bytes: bytes.length, renderMode: 'auto', selected: null, surfaceTargets: new SurfaceTargets(), camera: null, gridVisible: true, viewMode: 'free', frontYaw: vrm?.meta?.metaVersion === '0' ? Math.PI : 0, lighting: lightingPreset('studio'),
+  const state = { model, vrm, meshes, materials, asset: summary, bytes: bytes.length, renderMode: 'auto', selected: null, surfaceTargets: new SurfaceTargets(), camera: null, gridVisible: true, viewMode: 'free', frontYaw: vrm?.meta?.metaVersion === '0' ? Math.PI : 0, lighting: lightingPreset('studio', lightingProfile('auto', materials)),
     diagnostics: { materials: materials.map(m => ({ name: m.name, type: m.type, mtoon: !!m.isMToonMaterial, texture: !!m.map })), meshNames: meshes.map(m => m.userData.sourceName), drawGroups: meshes.map(m => ({vertices: m.geometry.index?.count || m.geometry.attributes.position.count, groups: m.geometry.groups})), extensions: json.extensionsUsed || [] } };
   saveView();
   const previousActiveId = modelTabs.activeId, original = modelTabs.get(destination.targetId)?.state;
@@ -275,6 +274,7 @@ function updateLighting() {
 }
 function renderLighting() {
   $('lighting-preset').value = lighting.preset;
+  $('lighting-profile-status').textContent = lighting.automatic ? `自動：${lighting.profile === 'mtoon' ? 'MToon' : 'PBR'}向けの初期設定` : `手動設定を保持中（${lighting.profile === 'mtoon' ? 'MToon' : 'PBR'}基準）`;
   for (const input of $('lighting-panel').querySelectorAll('[data-lighting]')) {
     const [group, field] = input.dataset.lighting.split('.'), value = field ? lighting[group][field] : lighting[group];
     input.value = value;
@@ -285,13 +285,13 @@ function renderLighting() {
 function changeLighting() { updateLighting(); renderLighting(); void syncContext(); }
 for (const [name, preset] of Object.entries(LIGHTING_PRESETS)) { const option = document.createElement('option'); option.value = name; option.textContent = preset.label; $('lighting-preset').append(option); }
 const customLighting = document.createElement('option'); customLighting.value = 'custom'; customLighting.textContent = 'カスタム'; customLighting.disabled = true; $('lighting-preset').append(customLighting);
-$('lighting-preset').onchange = event => { lighting = lightingPreset(event.target.value); changeLighting(); };
-$('lighting-reset').onclick = () => { lighting = lightingPreset('studio'); changeLighting(); };
+$('lighting-preset').onchange = event => { lighting = lightingPreset(event.target.value, lightingProfile(renderMode, materials, lighting.profile), false); changeLighting(); };
+$('lighting-reset').onclick = () => { lighting = lightingPreset('studio', lightingProfile(renderMode, materials, lighting.profile)); changeLighting(); };
 for (const input of $('lighting-panel').querySelectorAll('[data-lighting]')) input.addEventListener('input', () => {
   if (!input.checkValidity()) return;
   const [group, field] = input.dataset.lighting.split('.'), value = input.type === 'range' ? Number(input.value) : input.value;
   if (field) lighting[group][field] = value; else lighting[group] = value;
-  lighting.preset = 'custom'; changeLighting();
+  lighting.preset = 'custom'; lighting.automatic = false; changeLighting();
 });
 for (const input of $('lighting-panel').querySelectorAll('input[type=text]')) input.addEventListener('change', () => { if (!input.checkValidity()) renderLighting(); });
 $('lighting-panel').addEventListener('toggle', () => $('lighting-toggle').setAttribute('aria-expanded', String($('lighting-panel').open)));
@@ -316,6 +316,7 @@ function setMode(mode) {
   }
   if (model) model.traverse(o => { if (o.material?.isOutline || (Array.isArray(o.material) && o.material.every(m => m.isOutline))) o.visible = mode === 'auto'; });
   $('shader-badge').textContent = mode === 'auto' ? materials.some(m => m.isMToonMaterial) ? 'MToon' : 'PBR' : mode === 'mtoon' ? 'MToon Preview' : mode === 'pbr' ? 'PBR Preview' : 'Wireframe';
+  lighting = lightingForMode(lighting, mode, materials); updateLighting(); renderLighting();
   void syncContext();
 }
 
@@ -682,7 +683,7 @@ function applyTheme(theme) { document.documentElement.dataset.theme = theme; gri
 
 await loadBytes(decode(demoBase64), { name: 'Studio Companion', format: 'glTF 2.0', demo: true });
 if (hosted) {
-  app = new App({ name: 'Blend Studio', version: '0.1.12' }, { availableDisplayModes: ['inline', 'fullscreen'] }); extensions = new OpenAIExtensions(app);
+  app = new App({ name: 'Blend Studio', version: '0.1.13' }, { availableDisplayModes: ['inline', 'fullscreen'] }); extensions = new OpenAIExtensions(app);
   let pendingInput, pendingResult;
   app.addEventListener('toolinput', ({ arguments: args }) => { pendingInput = args; });
   const consumeResult = result => { const input = pendingInput; pendingInput = undefined; return queueImport(async () => {

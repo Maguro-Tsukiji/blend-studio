@@ -62,7 +62,7 @@ export class AssetStore {
   assets = new Map(); uploads = new Map(); directory; residentBytes = 0;
   async init() { this.directory ||= await mkdtemp(join(tmpdir(), 'blend-studio-')); return this; }
   async close() { if (this.directory) { const target = resolve(this.directory); if (dirname(target) !== resolve(tmpdir()) || !basename(target).startsWith('blend-studio-')) throw new Error('Invalid temporary cache path'); await rm(target, { recursive: true, force: true }); } this.assets.clear(); this.uploads.clear(); }
-  async status() { return { version: '0.1.12', ...await blenderStatus(), integrations: { blender: 'file-conversion', tripo: 'planned' }, maxFileBytes: MAX_BYTES }; }
+  async status() { return { version: '0.1.13', ...await blenderStatus(), integrations: { blender: 'file-conversion', tripo: 'planned' }, maxFileBytes: MAX_BYTES }; }
   beginUpload(name, size) {
     if (!['.blend', '.glb', '.vrm'].includes(extname(name).toLowerCase())) throw new Error('対応形式は .blend / .glb / .vrm です。');
     if (!Number.isSafeInteger(size) || size <= 0 || size > MAX_BYTES) throw new Error('ファイルは256MB以下にしてください。');

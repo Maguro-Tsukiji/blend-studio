@@ -10,7 +10,7 @@
 
 Blend Studio is a local MCP Apps / OpenAI MCP Extensions plugin for `.blend`, `.glb`, and `.vrm` files. It combines PBR and MToon rendering with object/material selection and a surface marker that provides spatial context to the host's chat.
 
-**Version 0.1.12 is experimental. Viewing and edit-location context are implemented. Live Blender editing and Tripo generation are planned integrations.**
+**Version 0.1.13 is experimental. Viewing and edit-location context are implemented. Live Blender editing and Tripo generation are planned integrations.**
 
 ![Surface marker on the bundled Studio Companion demo](docs/images/surface-point.png)
 
@@ -41,7 +41,7 @@ This distribution runs a local process. Publishing a GitHub repository does not 
 
 ## Install on Windows
 
-1. Download the **[v0.1.12 built ZIP](https://github.com/Maguro-Tsukiji/blend-studio/releases/download/v0.1.12/Blend-Studio-0.1.12.zip)**. Check [Releases](https://github.com/Maguro-Tsukiji/blend-studio/releases) for newer versions.
+1. Download the **[v0.1.13 built ZIP](https://github.com/Maguro-Tsukiji/blend-studio/releases/download/v0.1.13/Blend-Studio-0.1.13.zip)**. Check [Releases](https://github.com/Maguro-Tsukiji/blend-studio/releases) for newer versions.
 2. Extract the entire ZIP.
 3. Double-click `blend-studio/Install-Blend-Studio.cmd`.
 4. Wait for the completion message, then restart the supported desktop host.
@@ -66,6 +66,8 @@ Open a skinned humanoid Blend/GLB/VRM model, then choose **VRMAを読み込む**
 Open **☼ ライティング** beside the view buttons, or expand **ライティング** in the inspector. Choose Studio, Soft, Front or Dramatic, then adjust exposure, PBR environment intensity and hemisphere-light brightness/color. Key and fill lights each have intensity, color, horizontal angle and elevation controls. Use the color picker or a `#RRGGBB` value; **リセット** restores Studio.
 
 Directions follow the model's configured front, independently of camera orbit. Settings are retained per tab and across saved working-file refreshes, in memory until the view closes. These are preview settings; source lights/materials are unchanged. Environment lighting affects PBR; emissive and wireframe materials may respond differently.
+
+PBR and MToon have separate lighting defaults. Original materials containing MToon automatically use the MToon profile, with Studio exposure 0.8, hemisphere intensity 0.2, key 1.0 and fill 0.2. Other MToon presets also use restrained illumination to preserve pale detail; PBR values retain their previous behavior. Untouched defaults follow render-mode changes. Choosing a preset or editing a control keeps those settings across mode changes. **リセット** restores the defaults for the current renderer and automatic switching. The panel indicates automatic or retained manual settings.
 
 ## Open a revised file in the originating view
 

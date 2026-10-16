@@ -6,6 +6,13 @@ Version 0.1.8 is the first public GitHub release. Earlier versions describe loca
 
 No changes yet.
 
+## 0.1.13 — 2026-10-16
+
+- Separate PBR and MToon lighting profiles. Use restrained MToon Studio values (exposure 0.8, hemisphere 0.2, key 1.0, fill 0.2) and reduce the other toon presets to preserve pale detail.
+- Detect native MToon materials in Original mode and follow render-mode changes while defaults remain automatic. Keep existing PBR preset values.
+- Preserve explicitly selected presets and manual edits across mode/tab changes and working revisions; reset restores the current renderer’s automatic defaults. Indicate the active profile and automatic/manual behavior in the panel and host context.
+- Restore tab lighting before applying its render mode to prevent outgoing settings from overwriting incoming model state. Add profile detection, transitions, legacy/manual preservation and preset regression coverage.
+
 ## 0.1.12 — 2026-10-16
 
 - Add live preview lighting controls for exposure, PBR environment, hemisphere light and independent key/fill intensity, color and direction.

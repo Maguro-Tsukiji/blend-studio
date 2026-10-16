@@ -5,13 +5,34 @@ export const LIGHTING_PRESETS = {
   front: { label: '正面から', exposure: 1, environment: .5, ambient: 1, ambientColor: '#ffffff', key: { intensity: 3, color: '#ffffff', azimuth: 0, elevation: 15 }, fill: { intensity: .6, color: '#ffffff', azimuth: 90, elevation: 10 } },
   dramatic: { label: 'ドラマチック', exposure: 1.1, environment: .15, ambient: .3, ambientColor: '#c6ceff', key: { intensity: 5, color: '#ffcf9e', azimuth: -65, elevation: 30 }, fill: { intensity: 1.6, color: '#8eacff', azimuth: 140, elevation: 20 } },
 };
+// Toon shade colors already carry the intended shadow tint. Strong ambient
+// illumination lifts that tint towards the lit color and washes out pale detail.
+export const MTOON_LIGHTING_PRESETS = {
+  studio: { label: 'スタジオ（標準）', exposure: .8, environment: .3, ambient: .2, ambientColor: '#ffffff', key: { intensity: 1, color: '#ffffff', azimuth: -31, elevation: 46 }, fill: { intensity: .2, color: '#ffffff', azimuth: 121, elevation: 19 } },
+  soft: { label: 'やわらかい', exposure: .8, environment: .4, ambient: .3, ambientColor: '#ffffff', key: { intensity: .8, color: '#ffffff', azimuth: -35, elevation: 35 }, fill: { intensity: .25, color: '#e8edff', azimuth: 45, elevation: 25 } },
+  front: { label: '正面から', exposure: .8, environment: .2, ambient: .15, ambientColor: '#ffffff', key: { intensity: 1, color: '#ffffff', azimuth: 0, elevation: 15 }, fill: { intensity: .1, color: '#ffffff', azimuth: 90, elevation: 10 } },
+  dramatic: { label: 'ドラマチック', exposure: .8, environment: .1, ambient: .1, ambientColor: '#c6ceff', key: { intensity: 1.4, color: '#ffcf9e', azimuth: -65, elevation: 30 }, fill: { intensity: .3, color: '#8eacff', azimuth: 140, elevation: 20 } },
+};
 const number = (value, fallback, min, max) => typeof value === 'number' && Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
 const color = (value, fallback) => typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : fallback;
 export function lightingSettings(value = {}) {
+  const profile = value?.profile === 'mtoon' ? 'mtoon' : 'pbr', defaults = profile === 'mtoon' ? MTOON_LIGHTING_PRESETS.studio : studio;
   const light = (entry, fallback) => ({ intensity: number(entry?.intensity, fallback.intensity, 0, 10), color: color(entry?.color, fallback.color), azimuth: number(entry?.azimuth, fallback.azimuth, -180, 180), elevation: number(entry?.elevation, fallback.elevation, -90, 90) });
-  return { preset: Object.hasOwn(LIGHTING_PRESETS, value?.preset) ? value.preset : value?.preset === 'custom' ? 'custom' : 'studio', exposure: number(value?.exposure, studio.exposure, 0, 3), environment: number(value?.environment, studio.environment, 0, 3), ambient: number(value?.ambient, studio.ambient, 0, 5), ambientColor: color(value?.ambientColor, studio.ambientColor), key: light(value?.key, studio.key), fill: light(value?.fill, studio.fill) };
+  return { profile, automatic: value?.automatic === true || value == null || Object.keys(value).length === 0, preset: Object.hasOwn(LIGHTING_PRESETS, value?.preset) ? value.preset : value?.preset === 'custom' ? 'custom' : 'studio', exposure: number(value?.exposure, defaults.exposure, 0, 3), environment: number(value?.environment, defaults.environment, 0, 3), ambient: number(value?.ambient, defaults.ambient, 0, 5), ambientColor: color(value?.ambientColor, defaults.ambientColor), key: light(value?.key, defaults.key), fill: light(value?.fill, defaults.fill) };
 }
-export function lightingPreset(name) { return lightingSettings({ ...(LIGHTING_PRESETS[name] || studio), preset: Object.hasOwn(LIGHTING_PRESETS, name) ? name : 'studio' }); }
+export function lightingPreset(name, profile = 'pbr', automatic = true) {
+  const presets = profile === 'mtoon' ? MTOON_LIGHTING_PRESETS : LIGHTING_PRESETS;
+  const preset = Object.hasOwn(presets, name) ? name : 'studio';
+  return lightingSettings({ ...presets[preset], preset, profile, automatic });
+}
+export function lightingProfile(mode, materials, previous) {
+  if (mode === 'wire' && ['pbr', 'mtoon'].includes(previous)) return previous;
+  return mode === 'mtoon' || mode !== 'pbr' && materials.some(material => !material.isOutline && (material.isMToonMaterial || material.isMToonNodeMaterial)) ? 'mtoon' : 'pbr';
+}
+export function lightingForMode(settings, mode, materials) {
+  const current = lightingSettings(settings), profile = lightingProfile(mode, materials, current.profile);
+  return current.automatic && current.profile !== profile ? lightingPreset('studio', profile) : current;
+}
 export function applyLighting({ scene, renderer, ambient, key, fill }, settings, frame = { center: [0, 0, 0], largest: 1 }, frontYaw = 0) {
   const value = lightingSettings(settings), center = frame.center, distance = Math.max(frame.largest * 2, 1);
   renderer.toneMappingExposure = value.exposure; scene.environmentIntensity = value.environment;

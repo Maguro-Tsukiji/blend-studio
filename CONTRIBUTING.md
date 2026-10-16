@@ -59,6 +59,8 @@ For motion and multi-point UI checks, use the project-owned `assets/humanoid-tes
 
 For lighting, check all presets, color picker/hex input, zero intensity/exposure, key/fill directions, reset, PBR and MToon, both themes and narrow layouts. Switch tabs and refresh a saved working file to check retained settings. Confirm the fixture host receives the same lighting values. `tests/lighting.test.mjs` checks bounded settings, independent snapshots and actual Three.js light positioning/application.
 
+For automatic lighting, verify a native MToon model opens with restrained values in Original mode, PBR restores its own defaults, and MToon preview selects the toon profile. Choose an explicit preset or edit a control, switch modes/tabs and refresh the source to check it is retained. Reset must choose the current renderer's defaults. Legacy snapshots without automatic metadata must not be silently overwritten.
+
 ## Reporting and pull requests
 
 - Include the app version, OS, Node/Blender/host versions, file format, reproduction steps, and the observed error.
